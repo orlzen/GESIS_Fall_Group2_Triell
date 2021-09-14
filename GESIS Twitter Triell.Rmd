@@ -9,6 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r, include=FALSE}
+source("twitter_token.R", local = knitr::knit_global())
+# load twitter tokens from separate file (not shared on github for privacy reasons)
+```
+
 ## Chapter 1
 
 This is some text.
