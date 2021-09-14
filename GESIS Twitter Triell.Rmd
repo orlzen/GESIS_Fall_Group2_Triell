@@ -5,11 +5,38 @@ date: "13 9 2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+library(rtweet)
 ```
 
-## Chapter 1
+
+```{r setup, include=FALSE}
+# Global setup for all R chunks in this file
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+
+# Chapter 1: Getting twitter data
+
+```{r, include = FALSE}
+source("twitter_token.R", local = knitr::knit_global())
+# load twitter tokens from separate file
+```
+
+```{r get_twitter_data}
+triell <- search_tweets("Triell", # Search tweets with search phrase "Triell"
+                        n=10, # get 10 tweets
+                        include_rts=FALSE, # do not include retweets
+                        lang="de" # Only tweets from Twitter users with German language
+                        )
+```
+
+
+```{r save_to_disk, eval = TRUE}
+# Save data as csv
+write_as_csv(triell, "data/triell_2021-09-14.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
+```
 
 This is some text.
 
@@ -33,6 +60,6 @@ When you click the **Knit** button a document will be generated that includes bo
 summary(cars)
 ```
 
-## Chapter 2
+# Chapter 2
 
 Trying github
