@@ -10,16 +10,16 @@ library(rtweet)
 ```
 
 
-```{r setup, include=FALSE}
+```{r setup, include = TRUE}
 # Global setup for all R chunks in this file
-knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can be taken out here later
 ```
 
 
 # Chapter 1: Getting twitter data
 
-```{r, include = FALSE}
+```{r twitter_token}
 source("twitter_token.R", local = knitr::knit_global())
 # load twitter tokens from separate file (not shared on github for privacy reasons)
 ```
@@ -33,13 +33,13 @@ triell <- search_tweets("Triell", # Search tweets with search phrase "Triell"
 ```
 
 
-```{r save_to_disk, eval = TRUE}
+```{r save_to_disk}
 # Save data as csv
 write_as_csv(triell, "data/triell_2021-09-14.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
 ```
 
 
-## Chapter 1
+# Chapter 2
 
 
 This is some text.
@@ -64,6 +64,6 @@ When you click the **Knit** button a document will be generated that includes bo
 summary(cars)
 ```
 
-# Chapter 2
+# Chapter 3
 
 Trying github
