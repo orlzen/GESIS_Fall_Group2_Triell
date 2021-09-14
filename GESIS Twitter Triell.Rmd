@@ -39,7 +39,7 @@ knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can b
 ```
 
 
-# Chapter 1: Getting twitter data
+# Getting twitter data
 
 Data from twitter is loades using the `rtweet` package. 
 
@@ -48,13 +48,14 @@ source("twitter_token.R", local = knitr::knit_global())
 # load twitter tokens from separate file (not shared on github for privacy reasons)
 ```
 
-We search for tweets with the query "Triell".
+We search for tweets with the query "Triell", do not include retweets and only search for tweets from users with German language.
 
 ```{r get_twitter_data}
 triell <- search_tweets("Triell", # Search tweets with search phrase "Triell"
-                        n = 100, # get 10 tweets
+                        n = 18000, # get number of tweets
                         include_rts = FALSE, # do not include retweets
-                        lang = "de" # Only tweets from Twitter users with German language
+                        lang = "de" #, # Only tweets from Twitter users with German language
+#                        retryonratelimit = TRUE
                         )
 ```
 
@@ -65,31 +66,27 @@ write_as_csv(triell, "data/triell_2021-09-14.csv", prepend_ids = TRUE, na = "", 
 ```
 
 
-# Chapter 2
+# Data cleaning and preparation
 
-
-This is some text.
-
-These are bullet points:
-
--   Lorem
--   Ipsum
-  - etc.
-  
-This is an enumeration:
-
-1. First line
-2. Second line
-3. Third line
-
-This is how you emphasise text: _emphasised_. And this his how to write in bold: **bold**.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r cleaning}
+triell$text <-  gsub("https\\S*", "", triell$text)
+triell$text <-  gsub("@\\S*", "", triell$text) 
+triell$text <-  gsub("amp", "", triell$text) 
+triell$text <-  gsub("[\r\n]", "", triell$text)
+triell$text <-  gsub("[[:punct:]]", "", triell$text) # remoce punctuation
 ```
 
-# Chapter 3
+```{r generate_wordlist_text}
+triell_text <- triell %>%
+  select(name, text) %>%
+  unnest_tokens(word, text)
+# new object, only words and names of twitter accounts
+```
 
-Trying github
+# Data analysis
+
+Our aim is to analyse the German twitter sphere after the first and the second Triell to find differences in the tweets (sentiment analysis etc.).
+
+
+
+
