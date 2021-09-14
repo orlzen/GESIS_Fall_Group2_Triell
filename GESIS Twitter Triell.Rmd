@@ -21,7 +21,7 @@ knitr::opts_chunk$set(warning = FALSE)
 
 ```{r, include = FALSE}
 source("twitter_token.R", local = knitr::knit_global())
-# load twitter tokens from separate file
+# load twitter tokens from separate file (not shared on github for privacy reasons)
 ```
 
 ```{r get_twitter_data}
@@ -37,19 +37,10 @@ triell <- search_tweets("Triell", # Search tweets with search phrase "Triell"
 # Save data as csv
 write_as_csv(triell, "data/triell_2021-09-14.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
 ```
-=======
-```{r, include=FALSE}
-source("twitter_token.R", local = knitr::knit_global())
-# load twitter tokens from separate file (not shared on github for privacy reasons)
-```
 
-```{r, include=FALSE}
-source("twitter_token.R", local = knitr::knit_global())
-# load twitter tokens from separate file (not shared on github for privacy reasons)
-```
 
 ## Chapter 1
->>>>>>> 6be4450b7c077a811913ea3a0b52f8d95e964c6a
+
 
 This is some text.
 
