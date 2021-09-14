@@ -29,6 +29,7 @@ library(spacyr) # Für Lemmatisierung
 # library(mallet) # For topic modelling
 library(readxl) # For importing older Excel-saves
 library(topicmodels) # For topic modeling
+library(academictwitteR)
 ```
 
 
@@ -41,7 +42,7 @@ knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can b
 
 # Getting twitter data
 
-Data from twitter is loades using the `rtweet` package. 
+Data from twitter is loades using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf] or the `academictwitteR` package^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html]. 
 
 ```{r twitter_token}
 source("twitter_token.R", local = knitr::knit_global())
@@ -50,8 +51,8 @@ source("twitter_token.R", local = knitr::knit_global())
 
 We search for tweets with the query "Triell", do not include retweets and only search for tweets from users with German language.
 
-```{r get_twitter_data}
-triell <- search_tweets("Triell", # Search tweets with search phrase "Triell"
+```{r rtweet}
+triell <- rtweet::search_tweets("Triell", # Search tweets with search phrase "Triell"
                         n = 18000, # get number of tweets
                         include_rts = FALSE, # do not include retweets
                         lang = "de" #, # Only tweets from Twitter users with German language
@@ -59,12 +60,29 @@ triell <- search_tweets("Triell", # Search tweets with search phrase "Triell"
                         )
 ```
 
-
 ```{r save_to_disk}
 # Save data as csv
-write_as_csv(triell, "data/triell_2021-09-14.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
+write_as_csv(triell, 
+             "data/triell_2021-09-14.csv", 
+             prepend_ids = TRUE, 
+             na = "", 
+             fileEncoding = "UTF-8"
+             )
 ```
 
+```{r academictwitteR}
+trielltweets <-
+  academictwitteR::get_all_tweets(
+    query = "Triell",
+    start_tweets = "2020-01-01T00:00:00Z",
+    end_tweets = "2020-09-14T00:00:00Z",
+    file = "trielltweets",
+    data_path = "data/",
+    bind_tweets = FALSE,
+    n = 10,
+    country = "DE"
+  )
+```
 
 # Data cleaning and preparation
 
