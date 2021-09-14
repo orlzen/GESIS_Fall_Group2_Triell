@@ -43,6 +43,11 @@ source("twitter_token.R", local = knitr::knit_global())
 # load twitter tokens from separate file (not shared on github for privacy reasons)
 ```
 
+```{r, include=FALSE}
+source("twitter_token.R", local = knitr::knit_global())
+# load twitter tokens from separate file (not shared on github for privacy reasons)
+```
+
 ## Chapter 1
 >>>>>>> 6be4450b7c077a811913ea3a0b52f8d95e964c6a
 
