@@ -1,0 +1,178 @@
+---
+title: "Twitter communication after Triell"
+author: "Melanie Dietz, Julia Lück-Benz, Carina Weinmann, Lorenz Biberstein, Gabor Scheiring"
+date: "`r format(Sys.Date(), '%d %b %Y')`"
+output: html_document
+---
+
+```{r libraries}
+library(rtweet)
+library(ggplot2)
+library(knitr) # for generating tables in markdown
+library(janitor) # for creating tables
+# library(wordcloud) # zur Erstellung von wordclouds
+# library(DataExplorer) # Für Exploratory Data Analysis
+# library(ggrepel)
+# library(kableExtra) # Für schöne Tabellen
+# library(scales)
+# library(Cairo) # Zum Export von Grafiken
+# library(data.table)
+# library(writexl) # Um Daten im Excel-Format zu exportieren
+# # library(quanteda.textmodels) # Functions for scaling and classifying textual data
+# # library(quanteda.textstats) # Statistics for textual data
+# # library(quanteda.textplot) # Statistics for textual data 
+# library(readtext) # companion package of quanteda for loading texts
+library(tm) # Für text mining
+library(tidytext) # for text mining
+# library(spacyr) # Für Lemmatisierung
+# # library(mallet) # For topic modelling
+# library(readxl) # For importing older Excel-saves
+# library(academictwitteR)
+library(data.table)
+library(quanteda) # Quantitative Analysis of Textual Data 
+library(quanteda.textstats)
+library(syuzhet)
+library(dplyr) # For topic modeling
+library(topicmodels)
+```
+
+
+```{r setup, include = TRUE}
+# Global setup for all R chunks in this file
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can be taken out here later
+```
+
+# Introduction
+
+Hallo zusammen 
+
+This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
+
+The aim of this work is to analyse tweets after the first and the second Triell^[Triell is a portmanteau of "tri", i.e. "three" and "Duell".] in Germany (podium discussions before the "Bundestagswahl").
+
+# Getting twitter data
+
+First, we load data from Twitter. Data from twitter is loaded using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf] or the `academictwitteR` package^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html]. 
+
+```{r twitter_token}
+# source("twitter_token.R", local = knitr::knit_global())
+# load twitter tokens from separate file (not shared on github for privacy reasons)
+```
+
+We search for tweets with the query "Triell", do not include retweets and only search for tweets from users with German language.
+
+```{r academictwitteR}
+# Trying package academicTwitteR, but could not get it to work
+
+# trielltweets <-
+#   academictwitteR::get_all_tweets(
+#     query = "Triell",
+#     start_tweets = "2020-01-01T00:00:00Z",
+#     end_tweets = "2020-09-14T00:00:00Z",
+#     file = "trielltweets",
+#     data_path = "data/",
+#     bind_tweets = FALSE,
+#     n = 10,
+#     country = "DE"
+#   )
+```
+
+```{r get_tweets_save}
+# Use working package rtweets. Load tweets (does not need to be done by everybodey, was only done once by Lorenz. Afterwards we can use the import from the .csv file below)
+
+# triell <- rtweet::search_tweets("Triell", # Search tweets with search phrase "Triell"
+#                         n = 18000, # get number of tweets
+#                         include_rts = FALSE, # do not include retweets
+#                         lang = "de" #, # Only tweets from Twitter users with German language
+#                         )
+
+# Save data as csv
+# write_as_csv(triell, 
+#              "data/triell_2021-09-14.csv", 
+#              prepend_ids = TRUE, 
+#              na = "", 
+#              fileEncoding = "UTF-8"
+#              )
+```
+
+
+```{r import_csv}
+triell <- read.csv("data/triell_2021-09-14.csv")
+```
+
+# Data cleaning and preparation
+
+```{r cleaning}
+triell$text <-  gsub("https\\S*", "", triell$text)
+triell$text <-  gsub("@\\S*", "", triell$text) 
+triell$text <-  gsub("amp", "", triell$text) 
+triell$text <-  gsub("[\r\n]", "", triell$text)
+triell$text <-  gsub("[[:punct:]]", "", triell$text) # remoce punctuation
+```
+
+```{r generate_wordlist_text}
+triell_text <- triell %>%
+  select(name, text) %>%
+  unnest_tokens(word, text)
+# new object, only words and names of twitter accounts
+```
+
+```{r change_date}
+# Isolate month
+triell$month <- substr(triell$created_at, 1, 7)
+
+# Isolate day
+triell$day <- substr(triell$created_at, 1, 10)
+```
+
+```{r triell_dates}
+<<<<<<< HEAD
+# First Triell: 2021-08-29 
+# Beginn 20:15 Uhr
+# Dauer 1:55h
+
+
+# Second Triell: 2021-09
+# Beginn 20:15 Uhr
+# Dauer 1:36h
+
+=======
+# Add variable for when the tweet was sent (before first triell, after the first triell, after second triell etc.)
+
+# Suggestion Lorenz: 
+# 1. Before first triell
+# 2. During first triell
+# 3. After first triell and before second triell
+# 4. During second triell
+# 5. After second triell
+
+# First Triell: 2021-08-29
+
+triell$
+
+# Second Triell: 2021-09-12
+>>>>>>> f139d5a85afff7a9b8fdbe0da11f185e5815dfe1
+```
+
+
+# Generate corpus
+
+```{r}
+triellcorpus <- corpus(triell)
+```
+
+
+# Data analysis
+
+Our aim is to analyse the German twitter sphere after the first and the second Triell to find differences in the tweets (sentiment analysis etc.).
+
+## Sentiment analysis?
+
+Maybe try to compare the sentiments after the first and after the second Triell?
+
+HALLO :)
+
+
+
+
