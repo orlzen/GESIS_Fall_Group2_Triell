@@ -54,7 +54,7 @@ The aim of this work is to analyse tweets after the first and the second Triell^
 First, we load data from Twitter. Data from twitter is loaded using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf] or the `academictwitteR` package^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html]. 
 
 ```{r twitter_token}
-source("twitter_token.R", local = knitr::knit_global())
+# source("twitter_token.R", local = knitr::knit_global())
 # load twitter tokens from separate file (not shared on github for privacy reasons)
 ```
 
@@ -116,10 +116,12 @@ triell_text <- triell %>%
 # new object, only words and names of twitter accounts
 ```
 
-```{r}
-triell$date <- as.POSIXct(triell$created_at,format="%Y %b %a %H:%M:%S",tz="UTC")
- 
-tweets$month <- substr(tweets$date, 1, 7)
+```{r change_date}
+# Isolate month
+triell$month <- substr(triell$created_at, 1, 7)
+
+# Isolate day
+triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 
