@@ -45,8 +45,6 @@ knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can b
 
 # Introduction
 
-Hallo zusammen 
-
 This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
 
 The aim of this work is to analyse tweets after the first and the second Triell^[Triell is a portmanteau of "tri", i.e. "three" and "Duell".] in Germany (podium discussions before the "Bundestagswahl").
@@ -127,7 +125,6 @@ triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 ```{r triell_dates}
-<<<<<<< HEAD
 # First Triell: 2021-08-29 
 # Beginn 20:15 Uhr
 # Dauer 1:55h
@@ -137,7 +134,6 @@ triell$day <- substr(triell$created_at, 1, 10)
 # Beginn 20:15 Uhr
 # Dauer 1:36h
 
-=======
 # Add variable for when the tweet was sent (before first triell, after the first triell, after second triell etc.)
 
 # Suggestion Lorenz: 
@@ -147,12 +143,8 @@ triell$day <- substr(triell$created_at, 1, 10)
 # 4. During second triell
 # 5. After second triell
 
-# First Triell: 2021-08-29
+triell$phase <- 
 
-triell$
-
-# Second Triell: 2021-09-12
->>>>>>> f139d5a85afff7a9b8fdbe0da11f185e5815dfe1
 ```
 
 
@@ -171,8 +163,25 @@ Our aim is to analyse the German twitter sphere after the first and the second T
 
 Maybe try to compare the sentiments after the first and after the second Triell?
 
-HALLO :)
+```{r}
+triell$sentiment <- get_sentiment(triell$text, method="afinn")
+triell %>% 
+  group_by(triell$day) %>% 
+  summarise(sent=mean(triell$sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% head(n=20) %>% 
+  arrange(desc(sent))
+```
 
+## Topic modeling?
 
+Maybe try to identify topics?
+
+```{r}
+cdfm <- triellcorpus %>% dfm() %>% dfm_trim(., min_docfreq = 2)
+
+K <- 30
+lda <- LDA(cdfm, k = K, method = "Gibbs", 
+                control = list(verbose=25L, seed = 123, burnin = 100, iter = 500))
+```
 
 
