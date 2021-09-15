@@ -184,8 +184,19 @@ lda <- LDA(cdfm, k = K, method = "Gibbs",
                 control = list(verbose=25L, seed = 123, burnin = 100, iter = 500))
 ```
 
-# Download Tweets
+
+# Download Tweets: Alternativen
 
 ```{r}
-triell <- search_tweets("#triell AND baerbock", n = 18000, include_rts = FALSE, lang = "de")
+triell_b <- search_tweets("#triell AND baerbock", n = 18000, retryonratelimit = TRUE, include_rts = FALSE, lang = "de")
+
+write_as_csv(triell_b, "data/triell_b_2021-09-15.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
+
+triell_s <- search_tweets("#triell AND scholz", n = 18000, retryonratelimit = TRUE, include_rts = FALSE, lang = "de")
+
+write_as_csv(triell_s, "data/triell_s_2021-09-15.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
+
+triell_l <- search_tweets("#triell AND laschet", n = 18000, retryonratelimit = TRUE, include_rts = FALSE, lang = "de")
+
+write_as_csv(triell_l, "data/triell_l_2021-09-15.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
 ```
