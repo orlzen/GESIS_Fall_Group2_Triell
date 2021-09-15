@@ -127,6 +127,7 @@ triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 ```{r triell_dates}
+<<<<<<< HEAD
 # First Triell: 2021-08-29 
 # Beginn 20:15 Uhr
 # Dauer 1:55h
@@ -136,6 +137,22 @@ triell$day <- substr(triell$created_at, 1, 10)
 # Beginn 20:15 Uhr
 # Dauer 1:36h
 
+=======
+# Add variable for when the tweet was sent (before first triell, after the first triell, after second triell etc.)
+
+# Suggestion Lorenz: 
+# 1. Before first triell
+# 2. During first triell
+# 3. After first triell and before second triell
+# 4. During second triell
+# 5. After second triell
+
+# First Triell: 2021-08-29
+
+triell$
+
+# Second Triell: 2021-09-12
+>>>>>>> f139d5a85afff7a9b8fdbe0da11f185e5815dfe1
 ```
 
 
