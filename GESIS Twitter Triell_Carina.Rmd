@@ -187,5 +187,5 @@ lda <- LDA(cdfm, k = K, method = "Gibbs",
 # Download Tweets
 
 ```{r}
-triell <- search_tweets("#triell", n = 1000000, retryonratelimit = TRUE, include_rts = FALSE, lang = "de")
+triell <- search_tweets("#triell AND baerbock", n = 18000, include_rts = FALSE, lang = "de")
 ```
