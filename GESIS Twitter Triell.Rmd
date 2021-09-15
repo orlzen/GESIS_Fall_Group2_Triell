@@ -5,6 +5,14 @@ date: "`r format(Sys.Date(), '%d %b %Y')`"
 output: html_document
 ---
 
+```{r setup, include = TRUE}
+# Global setup for all R chunks in this file
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can be taken out here later
+```
+
 ```{r libraries}
 library(rtweet)
 library(ggplot2)
@@ -36,12 +44,6 @@ library(dplyr) # For topic modeling
 library(topicmodels)
 ```
 
-
-```{r setup, include = TRUE}
-# Global setup for all R chunks in this file
-knitr::opts_chunk$set(warning = FALSE)
-knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can be taken out here later
-```
 
 # Introduction
 
@@ -138,7 +140,8 @@ triell$day <- substr(triell$created_at, 1, 10)
 
 # First Triell: 2021-08-29
 
-triell$
+# triell$phase <- triell %>%
+#  filter(created_at < )
 
 # Second Triell: 2021-09-12
 ```
