@@ -184,4 +184,8 @@ lda <- LDA(cdfm, k = K, method = "Gibbs",
                 control = list(verbose=25L, seed = 123, burnin = 100, iter = 500))
 ```
 
+# Download Tweets
 
+```{r}
+triell <- search_tweets("#triell", n = 1000000, retryonratelimit = TRUE, include_rts = FALSE, lang = "de")
+```
