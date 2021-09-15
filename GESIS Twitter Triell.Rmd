@@ -45,6 +45,8 @@ knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can b
 
 # Introduction
 
+Hallo zusammen 
+
 This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
 
 The aim of this work is to analyse tweets after the first and the second Triell^[Triell is a portmanteau of "tri", i.e. "three" and "Duell".] in Germany (podium discussions before the "Bundestagswahl").
