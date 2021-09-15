@@ -127,7 +127,15 @@ triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 ```{r triell_dates}
-# First Triell: 2021-08-
+# First Triell: 2021-08-29 
+# Beginn 20:15 Uhr
+# Dauer 1:55h
+
+
+# Second Triell: 2021-09
+# Beginn 20:15 Uhr
+# Dauer 1:36h
+
 ```
 
 
