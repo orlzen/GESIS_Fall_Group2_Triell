@@ -83,19 +83,21 @@ We search for tweets with the query "Triell", do not include retweets and only s
 ```{r get_tweets_save}
 # Use working package rtweets. Load tweets (does not need to be done by everybodey, was only done once by Lorenz. Afterwards we can use the import from the .csv file below)
 
-# triell <- rtweet::search_tweets("Triell", # Search tweets with search phrase "Triell"
-#                         n = 18000, # get number of tweets
-#                         include_rts = FALSE, # do not include retweets
-#                         lang = "de" #, # Only tweets from Twitter users with German language
-#                         )
+test <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
+                         include_rts = FALSE, # do not include retweets
+                         lang = "de", # Only tweets from Twitter users with German language
+                         retryonratelimit = TRUE,
+                         geocode = lookup_coords("de"),
+                         n = 10
+                         )
 
 # Save data as csv
-# write_as_csv(triell, 
-#              "data/triell_2021-09-14.csv", 
-#              prepend_ids = TRUE, 
-#              na = "", 
-#              fileEncoding = "UTF-8"
-#              )
+ write_as_csv(triell,
+              "data/triell_2021-09-14.csv",
+              prepend_ids = TRUE,
+              na = "",
+              fileEncoding = "UTF-8"
+              )
 ```
 
 
@@ -129,18 +131,16 @@ triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 ```{r triell_dates}
-<<<<<<< HEAD
+# Add variable for when the tweet was sent (before first triell, after the first triell, after second triell etc.)
+
 # First Triell: 2021-08-29 
 # Beginn 20:15 Uhr
-# Dauer 1:55h
+# Dauer 1:55h -> End: 22:10
 
 
 # Second Triell: 2021-09
 # Beginn 20:15 Uhr
-# Dauer 1:36h
-
-=======
-# Add variable for when the tweet was sent (before first triell, after the first triell, after second triell etc.)
+# Dauer 1:36h -> End: 21:51
 
 # Suggestion Lorenz: 
 # 1. Before first triell
@@ -149,13 +149,11 @@ triell$day <- substr(triell$created_at, 1, 10)
 # 4. During second triell
 # 5. After second triell
 
-# First Triell: 2021-08-29
-
 # triell$phase <- triell %>%
-#  filter(created_at < )
+#   filter(created_at < )
 
 # Second Triell: 2021-09-12
->>>>>>> f139d5a85afff7a9b8fdbe0da11f185e5815dfe1
+
 ```
 
 
