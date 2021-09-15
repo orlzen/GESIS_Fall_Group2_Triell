@@ -143,6 +143,7 @@ triell$day <- substr(triell$created_at, 1, 10)
 # 4. During second triell
 # 5. After second triell
 
+triell$phase <- 
 
 ```
 
@@ -162,8 +163,25 @@ Our aim is to analyse the German twitter sphere after the first and the second T
 
 Maybe try to compare the sentiments after the first and after the second Triell?
 
+```{r}
+triell$sentiment <- get_sentiment(triell$text, method="afinn")
+triell %>% 
+  group_by(triell$day) %>% 
+  summarise(sent=mean(triell$sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% head(n=20) %>% 
+  arrange(desc(sent))
+```
 
+## Topic modeling?
 
+Maybe try to identify topics?
 
+```{r}
+cdfm <- triellcorpus %>% dfm() %>% dfm_trim(., min_docfreq = 2)
+
+K <- 30
+lda <- LDA(cdfm, k = K, method = "Gibbs", 
+                control = list(verbose=25L, seed = 123, burnin = 100, iter = 500))
+```
 
 
