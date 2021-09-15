@@ -10,26 +10,30 @@ library(rtweet)
 library(ggplot2)
 library(knitr) # for generating tables in markdown
 library(janitor) # for creating tables
-library(wordcloud) # zur Erstellung von wordclouds
-library(DataExplorer) # Für Exploratory Data Analysis
-library(ggrepel)
-library(kableExtra) # Für schöne Tabellen
-library(scales)
-library(Cairo) # Zum Export von Grafiken
-library(data.table)
-library(writexl) # Um Daten im Excel-Format zu exportieren
-library(quanteda) # Quantitative Analysis of Textual Data 
-# library(quanteda.textmodels) # Functions for scaling and classifying textual data
-# library(quanteda.textstats) # Statistics for textual data
-# library(quanteda.textplot) # Statistics for textual data 
-library(readtext) # companion package of quanteda for loading texts
+# library(wordcloud) # zur Erstellung von wordclouds
+# library(DataExplorer) # Für Exploratory Data Analysis
+# library(ggrepel)
+# library(kableExtra) # Für schöne Tabellen
+# library(scales)
+# library(Cairo) # Zum Export von Grafiken
+# library(data.table)
+# library(writexl) # Um Daten im Excel-Format zu exportieren
+# # library(quanteda.textmodels) # Functions for scaling and classifying textual data
+# # library(quanteda.textstats) # Statistics for textual data
+# # library(quanteda.textplot) # Statistics for textual data 
+# library(readtext) # companion package of quanteda for loading texts
 library(tm) # Für text mining
 library(tidytext) # for text mining
-library(spacyr) # Für Lemmatisierung
-# library(mallet) # For topic modelling
-library(readxl) # For importing older Excel-saves
-library(topicmodels) # For topic modeling
-library(academictwitteR)
+# library(spacyr) # Für Lemmatisierung
+# # library(mallet) # For topic modelling
+# library(readxl) # For importing older Excel-saves
+# library(academictwitteR)
+library(data.table)
+library(quanteda) # Quantitative Analysis of Textual Data 
+library(quanteda.textstats)
+library(syuzhet)
+library(dplyr) # For topic modeling
+library(topicmodels)
 ```
 
 
@@ -39,10 +43,15 @@ knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can be taken out here later
 ```
 
+# Introduction
+
+This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
+
+The aim of this work is to analyse tweets after the first and the second Triell^[Triell is a portmanteau of "tri", i.e. "three" and "Duell".] in Germany (podium discussions before the "Bundestagswahl").
 
 # Getting twitter data
 
-Data from twitter is loades using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf] or the `academictwitteR` package^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html]. 
+First, we load data from Twitter. Data from twitter is loaded using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf] or the `academictwitteR` package^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html]. 
 
 ```{r twitter_token}
 source("twitter_token.R", local = knitr::knit_global())
@@ -90,8 +99,6 @@ We search for tweets with the query "Triell", do not include retweets and only s
 triell <- read.csv("data/triell_2021-09-14.csv")
 ```
 
-
-
 # Data cleaning and preparation
 
 ```{r cleaning}
@@ -109,9 +116,27 @@ triell_text <- triell %>%
 # new object, only words and names of twitter accounts
 ```
 
+```{r}
+triell$date <- as.POSIXct(triell$created_at,format="%Y %b %a %H:%M:%S",tz="UTC")
+ 
+tweets$month <- substr(tweets$date, 1, 7)
+```
+
+
+# Generate corpus
+
+```{r}
+triellcorpus <- corpus(triell)
+```
+
+
 # Data analysis
 
 Our aim is to analyse the German twitter sphere after the first and the second Triell to find differences in the tweets (sentiment analysis etc.).
+
+## Sentiment analysis?
+
+Maybe try to compare the sentiments after the first and after the second Triell?
 
 
 
