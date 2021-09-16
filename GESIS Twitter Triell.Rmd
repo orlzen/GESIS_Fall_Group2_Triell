@@ -103,7 +103,7 @@ We search for tweets with the query "Triell", do not include retweets and only s
 ```{r get_tweets_save_large}
 # going for the big guns: trying to download 300k tweets
 # 
-# triell_large <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
+# triell <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
 #                          include_rts = FALSE, # do not include retweets
 #                          lang = "de", # Only tweets from Twitter users with German language
 #                          retryonratelimit = TRUE,
@@ -111,7 +111,7 @@ We search for tweets with the query "Triell", do not include retweets and only s
 #                          )
 # 
 # # Save data as csv
-#  write_as_csv(triell_large,
+#  write_as_csv(triell,
 #               "data/triell_2021-09-16_large.csv",
 #               prepend_ids = TRUE,
 #               na = "",
@@ -120,8 +120,8 @@ We search for tweets with the query "Triell", do not include retweets and only s
 ```
 
 ```{r import_csv}
-triell <- read.csv("data/triell_2021-09-14.csv")
-triell_large <- read.csv("data/triell_2021-09-16_large.csv")
+# triell <- read.csv("data/triell_2021-09-14.csv")
+triell <- read.csv("data/triell_2021-09-16_large.csv")
 ```
 
 # Data cleaning and preparation
@@ -132,13 +132,6 @@ triell$text <-  gsub("@\\S*", "", triell$text)
 triell$text <-  gsub("amp", "", triell$text) 
 triell$text <-  gsub("[\r\n]", "", triell$text)
 triell$text <-  gsub("[[:punct:]]", "", triell$text) # remoce punctuation
-```
-
-```{r generate_wordlist_text}
-triell_text <- triell %>%
-  select(name, text) %>%
-  unnest_tokens(word, text)
-# new object, only words and names of twitter accounts
 ```
 
 ```{r change_date}
@@ -175,7 +168,15 @@ triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 
-# Generate corpus
+# Generate corpus & wordlists
+
+
+```{r generate_wordlist_text}
+triell_text <- triell %>%
+  select(name, text, created_at, day) %>%
+  unnest_tokens(word, text)
+# new object, only words and names of twitter accounts
+```
 
 ```{r}
 triellcorpus <- corpus(triell)
