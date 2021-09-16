@@ -138,6 +138,8 @@ str(triell)
 
 # Data cleaning and preparation
 
+## Removing punctuation etc. from tweet text
+
 ```{r cleaning}
 triell$text <-  gsub("https\\S*", "", triell$text)
 triell$text <-  gsub("@\\S*", "", triell$text) 
@@ -145,6 +147,16 @@ triell$text <-  gsub("amp", "", triell$text)
 triell$text <-  gsub("[\r\n]", "", triell$text)
 triell$text <-  gsub("[[:punct:]]", "", triell$text) # remoce punctuation
 ```
+
+## Adding date files
+
+First we check the first and last dates of our twitter dataset.
+
+```{r}
+head(triell$created_at)
+tail(triell$created_at)
+```
+
 
 ```{r change_date}
 # Isolate month
@@ -180,7 +192,7 @@ triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 
-# Generate corpus & wordlists
+## Generate corpus & wordlists
 
 ```{r generate_wordlist_text}
 triell_text <- triell %>%
