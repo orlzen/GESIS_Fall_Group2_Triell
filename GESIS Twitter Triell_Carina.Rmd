@@ -201,4 +201,12 @@ write_as_csv(triell_s, "data/triell_s_2021-09-15.csv", prepend_ids = TRUE, na = 
 triell_l <- search_tweets("#triell AND laschet", n = 18000, retryonratelimit = TRUE, include_rts = FALSE, lang = "de")
 
 write_as_csv(triell_l, "data/triell_l_2021-09-15.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
+
+triell_b <- read.csv("data/triell_b_2021-09-15.csv")
+
+triell_s <- read.csv("data/triell_s_2021-09-15.csv")
+
+triell_l <- read.csv("data/triell_l_2021-09-15.csv")
 ```
+```
+
