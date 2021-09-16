@@ -74,9 +74,7 @@ First, we load data from Twitter. Data from twitter is loaded using the `rtweet`
 
 ```{r}
 triell_b <- read.csv("data/triell_b_2021-09-15.csv")
-
 triell_s <- read.csv("data/triell_s_2021-09-15.csv")
-
 triell_l <- read.csv("data/triell_l_2021-09-15.csv")
 
 triell_b <- dplyr::mutate(triell_b, candidate = "Baerbock")
@@ -103,7 +101,7 @@ triell_all %>%
   arrange(desc(n)) %>% head(n=3) %>% 
   arrange(desc(sent))
 
-#Identifying most positive tweets
+#Identifying users with most positive tweets
 triell_all %>% 
   group_by(screen_name) %>% 
   summarise(sent=mean(sentiment), n=n()) %>% 
