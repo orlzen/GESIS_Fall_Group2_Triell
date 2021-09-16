@@ -82,27 +82,46 @@ We search for tweets with the query "Triell", do not include retweets and only s
 
 ```{r get_tweets_save}
 # Use working package rtweets. Load tweets (does not need to be done by everybodey, was only done once by Lorenz. Afterwards we can use the import from the .csv file below)
-
-test <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
-                         include_rts = FALSE, # do not include retweets
-                         lang = "de", # Only tweets from Twitter users with German language
-                         retryonratelimit = TRUE,
-                         geocode = lookup_coords("de"),
-                         n = 10
-                         )
-
-# Save data as csv
- write_as_csv(triell,
-              "data/triell_2021-09-14.csv",
-              prepend_ids = TRUE,
-              na = "",
-              fileEncoding = "UTF-8"
-              )
+# 
+# triell <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
+#                          include_rts = FALSE, # do not include retweets
+#                          lang = "de", # Only tweets from Twitter users with German language
+#                          retryonratelimit = TRUE,
+#                          geocode = lookup_coords("de"),
+#                          n = 10
+#                          )
+# 
+# # Save data as csv
+#  write_as_csv(triell,
+#               "data/triell_2021-09-14.csv",
+#               prepend_ids = TRUE,
+#               na = "",
+#               fileEncoding = "UTF-8"
+#               )
 ```
 
+```{r get_tweets_save_large}
+# going for the big guns: trying to download 300k tweets
+# 
+# triell_large <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
+#                          include_rts = FALSE, # do not include retweets
+#                          lang = "de", # Only tweets from Twitter users with German language
+#                          retryonratelimit = TRUE,
+#                          n = 300000
+#                          )
+# 
+# # Save data as csv
+#  write_as_csv(triell_large,
+#               "data/triell_2021-09-16_large.csv",
+#               prepend_ids = TRUE,
+#               na = "",
+#               fileEncoding = "UTF-8"
+#               )
+```
 
 ```{r import_csv}
 triell <- read.csv("data/triell_2021-09-14.csv")
+triell_large <- read.csv("data/triell_2021-09-16_large.csv")
 ```
 
 # Data cleaning and preparation
@@ -138,7 +157,7 @@ triell$day <- substr(triell$created_at, 1, 10)
 # Dauer 1:55h -> End: 22:10
 
 
-# Second Triell: 2021-09
+# Second Triell: 2021-09-12
 # Beginn 20:15 Uhr
 # Dauer 1:36h -> End: 21:51
 
@@ -152,7 +171,6 @@ triell$day <- substr(triell$created_at, 1, 10)
 # triell$phase <- triell %>%
 #   filter(created_at < )
 
-# Second Triell: 2021-09-12
 
 ```
 
