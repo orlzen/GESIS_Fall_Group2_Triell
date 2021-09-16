@@ -217,6 +217,21 @@ triellcorpus <- corpus(triell)
 str(triellcorpus)
 ```
 
+## Generate german sentiment dictionaries
+
+```{r generate_word_list}
+positive.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Positive.txt", 
+                            what = "char", 
+                            sep = "\n", 
+                            skip = 35, 
+                            quiet = T)
+negative.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Negative.txt", 
+                            what = "char", 
+                            sep = "\n", 
+                            skip = 35, 
+                            quiet = T)
+```
+
 
 # Data analysis
 
