@@ -34,6 +34,7 @@ library(quanteda.textstats)
 library(syuzhet)
 library(dplyr) # For topic modeling
 library(topicmodels)
+library(plotly)
 ```
 
 
@@ -53,140 +54,6 @@ The aim of this work is to analyse tweets after the first and the second Triell^
 
 First, we load data from Twitter. Data from twitter is loaded using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf] or the `academictwitteR` package^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html]. 
 
-```{r twitter_token}
-# source("twitter_token.R", local = knitr::knit_global())
-# load twitter tokens from separate file (not shared on github for privacy reasons)
-```
-
-We search for tweets with the query "Triell", do not include retweets and only search for tweets from users with German language.
-
-```{r academictwitteR}
-# Trying package academicTwitteR, but could not get it to work
-
-# trielltweets <-
-#   academictwitteR::get_all_tweets(
-#     query = "Triell",
-#     start_tweets = "2020-01-01T00:00:00Z",
-#     end_tweets = "2020-09-14T00:00:00Z",
-#     file = "trielltweets",
-#     data_path = "data/",
-#     bind_tweets = FALSE,
-#     n = 10,
-#     country = "DE"
-#   )
-```
-
-```{r get_tweets_save}
-# Use working package rtweets. Load tweets (does not need to be done by everybodey, was only done once by Lorenz. Afterwards we can use the import from the .csv file below)
-
-# triell <- rtweet::search_tweets("Triell", # Search tweets with search phrase "Triell"
-#                         n = 18000, # get number of tweets
-#                         include_rts = FALSE, # do not include retweets
-#                         lang = "de" #, # Only tweets from Twitter users with German language
-#                         )
-
-# Save data as csv
-# write_as_csv(triell, 
-#              "data/triell_2021-09-14.csv", 
-#              prepend_ids = TRUE, 
-#              na = "", 
-#              fileEncoding = "UTF-8"
-#              )
-```
-
-
-```{r import_csv}
-triell <- read.csv("data/triell_2021-09-14.csv")
-```
-
-# Data cleaning and preparation
-
-```{r cleaning}
-triell$text <-  gsub("https\\S*", "", triell$text)
-triell$text <-  gsub("@\\S*", "", triell$text) 
-triell$text <-  gsub("amp", "", triell$text) 
-triell$text <-  gsub("[\r\n]", "", triell$text)
-triell$text <-  gsub("[[:punct:]]", "", triell$text) # remoce punctuation
-```
-
-```{r generate_wordlist_text}
-triell_text <- triell %>%
-  select(name, text) %>%
-  unnest_tokens(word, text)
-# new object, only words and names of twitter accounts
-```
-
-```{r change_date}
-# Isolate month
-triell$month <- substr(triell$created_at, 1, 7)
-
-# Isolate day
-triell$day <- substr(triell$created_at, 1, 10)
-```
-
-```{r triell_dates}
-# First Triell: 2021-08-29 
-# Beginn 20:15 Uhr
-# Dauer 1:55h
-
-
-# Second Triell: 2021-09
-# Beginn 20:15 Uhr
-# Dauer 1:36h
-
-# Add variable for when the tweet was sent (before first triell, after the first triell, after second triell etc.)
-
-# Suggestion Lorenz: 
-# 1. Before first triell
-# 2. During first triell
-# 3. After first triell and before second triell
-# 4. During second triell
-# 5. After second triell
-
-triell$phase <- 
-
-```
-
-
-# Generate corpus
-
-```{r}
-triellcorpus <- corpus(triell)
-```
-
-
-# Data analysis
-
-Our aim is to analyse the German twitter sphere after the first and the second Triell to find differences in the tweets (sentiment analysis etc.).
-
-## Sentiment analysis?
-
-Maybe try to compare the sentiments after the first and after the second Triell?
-
-```{r}
-triell$sentiment <- get_sentiment(triell$text, method="afinn")
-triell %>% 
-  group_by(triell$day) %>% 
-  summarise(sent=mean(triell$sentiment), n=n()) %>% 
-  arrange(desc(n)) %>% head(n=20) %>% 
-  arrange(desc(sent))
-```
-
-## Topic modeling?
-
-Maybe try to identify topics?
-
-```{r}
-cdfm <- triellcorpus %>% dfm() %>% dfm_trim(., min_docfreq = 2)
-
-K <- 30
-lda <- LDA(cdfm, k = K, method = "Gibbs", 
-                control = list(verbose=25L, seed = 123, burnin = 100, iter = 500))
-```
-
-
-# Download Tweets: Alternativen
-
 ```{r}
 #Load tweets via package rtweets
 #Save tweets as csv
@@ -201,12 +68,46 @@ write_as_csv(triell_s, "data/triell_s_2021-09-15.csv", prepend_ids = TRUE, na = 
 triell_l <- search_tweets("#triell AND laschet", n = 18000, retryonratelimit = TRUE, include_rts = FALSE, lang = "de")
 
 write_as_csv(triell_l, "data/triell_l_2021-09-15.csv", prepend_ids = TRUE, na = "", fileEncoding = "UTF-8")
+```
 
+# Combining data sets
+
+```{r}
 triell_b <- read.csv("data/triell_b_2021-09-15.csv")
 
 triell_s <- read.csv("data/triell_s_2021-09-15.csv")
 
 triell_l <- read.csv("data/triell_l_2021-09-15.csv")
+
+triell_b <- dplyr::mutate(triell_b, candidate = "Baerbock")
+triell_l <- dplyr::mutate(triell_l, candidate = "Laschet")
+triell_s <- dplyr::mutate(triell_s, candidate = "Scholz")
+
+triell_all <- rbind(triell_b, triell_l, triell_s)
 ```
+
+#Sentiment analysis
+
+```{r}
+#Sentiment analysis of all tweets
+method <- "nrc"
+lang <- "german"
+triell_all$sentiment <- get_sentiment(triell_all$text, method=method, language=lang)
+sentiment_details <- get_nrc_sentiment(triell_all$text, language=lang)
+triell_all$sentiment[1:10]
+
+#Comparison of candidates
+triell_all %>% 
+  group_by(candidate) %>% 
+  summarise(sent=mean(sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% head(n=3) %>% 
+  arrange(desc(sent))
+
+#Identifying most positive tweets
+triell_all %>% 
+  group_by(screen_name) %>% 
+  summarise(sent=mean(sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% head(n=20) %>% 
+  arrange(desc(sent))
 ```
 
