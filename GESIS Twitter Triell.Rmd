@@ -50,6 +50,7 @@ library(syuzhet)
 library(dplyr) # For topic modeling
 library(topicmodels)
 library(udpipe) # for german lemmatization
+library(plotly)
 ```
 
 
@@ -147,10 +148,10 @@ triell_all <- rbind(triell_b, triell_l, triell_s)
 ```
 
 
-This gives us a dataframe of `r count(triell)` entries.
+This gives us a dataframe of `r count(triell_all)` entries.
 
 ```{r}
-str(triell)
+str(triell_all)
 ```
 
 
@@ -159,11 +160,11 @@ str(triell)
 ## Removing punctuation etc. from tweet text
 
 ```{r cleaning}
-triell$text <-  gsub("https\\S*", "", triell$text)
-triell$text <-  gsub("@\\S*", "", triell$text) 
-triell$text <-  gsub("amp", "", triell$text) 
-triell$text <-  gsub("[\r\n]", "", triell$text)
-triell$text <-  gsub("[[:punct:]]", "", triell$text) # remoce punctuation
+triell_all$text <-  gsub("https\\S*", "", triell_all$text)
+triell_all$text <-  gsub("@\\S*", "", triell_all$text) 
+triell_all$text <-  gsub("amp", "", triell_all$text) 
+triell_all$text <-  gsub("[\r\n]", "", triell_all$text)
+triell_all$text <-  gsub("[[:punct:]]", "", triell_all$text) # remove punctuation
 ```
 
 ## Adding date files
@@ -171,17 +172,17 @@ triell$text <-  gsub("[[:punct:]]", "", triell$text) # remoce punctuation
 First we check the first and last dates of our twitter dataset.
 
 ```{r}
-head(triell$created_at)
-tail(triell$created_at)
+# head(triell$created_at)
+# tail(triell$created_at)
 ```
 
 
 ```{r change_date}
 # Isolate month
-triell$month <- substr(triell$created_at, 1, 7)
-
-# Isolate day
-triell$day <- substr(triell$created_at, 1, 10)
+# triell$month <- substr(triell$created_at, 1, 7)
+# 
+# # Isolate day
+# triell$day <- substr(triell$created_at, 1, 10)
 ```
 
 ```{r triell_dates}
@@ -213,8 +214,8 @@ triell$day <- substr(triell$created_at, 1, 10)
 ## Generate corpus & wordlists
 
 ```{r generate_wordlist_text}
-triell_text <- triell %>%
-  select(name, text, created_at, day) %>%
+triell_text <- triell_all %>%
+  select(name, text, created_at) %>%
   unnest_tokens(word, text)
 # new object, only words and names of twitter accounts
 ```
@@ -222,48 +223,48 @@ triell_text <- triell %>%
 Converting the dataframe to a wordlist gives us a new dataframe with `r count(triell_text)` entries.
 
 ```{r}
-str(triell_text)
+ str(triell_text)
 ```
 
 We can also convert the `triell` dataframe into a corpus.
 
 ```{r}
-triellcorpus <- corpus(triell$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
+# triellcorpus <- corpus(triell_all$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
 ```
 
 ```{r}
-str(triellcorpus)
+# str(triellcorpus)
 ```
 
 ## Generate german sentiment dictionaries
 
 ```{r}
-ud_model <- udpipe_download_model("german")
-ud_model <- udpipe_load_model(ud_model)
-
-x <- udpipe_annotate(ud_model, triell$text)
-x <- as.data.frame(x)
+# ud_model <- udpipe_download_model("german")
+# ud_model <- udpipe_load_model(ud_model)
+# 
+# x <- udpipe_annotate(ud_model, triell$text)
+# x <- as.data.frame(x)
 ```
 
 
 ```{r generate_word_list}
-positive.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Positive.txt", 
-                            what = "char", 
-                            sep = "\n", 
-                            skip = 35, 
-                            quiet = T)
-
-negative.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Negative.txt", 
-                            what = "char", 
-                            sep = "\n", 
-                            skip = 35, 
-                            quiet = T)
-
-sentiment.lexikon <- dictionary(list(positive = positive.woerter.bl, negative = negative.woerter.bl))
-str(sentiment.lexikon)
-
-meine.dfm.sentiment <- dfm(triellcorpus, dictionary = sentiment.lexikon)
-meine.dfm.sentiment
+# positive.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Positive.txt", 
+#                             what = "char", 
+#                             sep = "\n", 
+#                             skip = 35, 
+#                             quiet = T)
+# 
+# negative.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Negative.txt", 
+#                             what = "char", 
+#                             sep = "\n", 
+#                             skip = 35, 
+#                             quiet = T)
+# 
+# sentiment.lexikon <- dictionary(list(positive = positive.woerter.bl, negative = negative.woerter.bl))
+# str(sentiment.lexikon)
+# 
+# meine.dfm.sentiment <- dfm(triellcorpus, dictionary = sentiment.lexikon)
+# meine.dfm.sentiment
 ```
 
 
@@ -273,11 +274,25 @@ Our aim is to analyse the German twitter sphere after the first and the second T
 
 ## Sentiment analysis?
 
-Maybe try to compare the sentiments after the first and after the second Triell?
+### Syuzhet in German
 
-TEST LINE
+```{r syzhet}
+# path_to_a_text_file <- system.file("extdata", "quijote.txt",package = "syuzhet")
+# my_text <- get_text_as_string(path_to_a_text_file)
+# char_v <- get_sentences(triell_all$text)
+method <- "nrc"
+lang <- "german"
+triell_all$sentiment <- get_sentiment(triell_all$text, method=method, language=lang)
+triell_all$sentiment[1:10]
+```
 
 
-
+```{r sentiment_candidate}
+triell_all %>% 
+  group_by(candidate) %>% 
+  summarise(sent=mean(sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% head(n=20) %>% 
+  arrange(desc(sent))
+```
 
 
