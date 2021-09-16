@@ -1,11 +1,18 @@
 ---
 title: "Twitter communication after Triell"
-author: "Melanie Dietz, Julia Lück-Benz, Carina Weinmann, Lorenz Biberstein, Gabor Scheiring"
+author: Melanie Dietz, Julia Lück-Benz, Carina Weinmann, Lorenz Biberstein
 date: "`r format(Sys.Date(), '%d %b %Y')`"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    toc_float: true
+  pdf_document: default
+editor_options: 
+  chunk_output_type: inline
 ---
 
-```{r setup, include = TRUE}
+```{r setup, include = FALSE}
 # Global setup for all R chunks in this file
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(message = FALSE)
@@ -46,8 +53,6 @@ library(topicmodels)
 
 
 # Introduction
-
-Hallo zusammen 
 
 This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
 
@@ -124,6 +129,13 @@ We search for tweets with the query "Triell", do not include retweets and only s
 triell <- read.csv("data/triell_2021-09-16_large.csv")
 ```
 
+This gives us a dataframe of `r count(triell)` entries.
+
+```{r}
+str(triell)
+```
+
+
 # Data cleaning and preparation
 
 ```{r cleaning}
@@ -170,7 +182,6 @@ triell$day <- substr(triell$created_at, 1, 10)
 
 # Generate corpus & wordlists
 
-
 ```{r generate_wordlist_text}
 triell_text <- triell %>%
   select(name, text, created_at, day) %>%
@@ -178,8 +189,20 @@ triell_text <- triell %>%
 # new object, only words and names of twitter accounts
 ```
 
+Converting the dataframe to a wordlist gives us a new dataframe with `r count(triell_text)` entries.
+
+```{r}
+str(triell_text)
+```
+
+We can also convert the `triell` dataframe into a corpus.
+
 ```{r}
 triellcorpus <- corpus(triell)
+```
+
+```{r}
+str(triellcorpus)
 ```
 
 
@@ -191,7 +214,6 @@ Our aim is to analyse the German twitter sphere after the first and the second T
 
 Maybe try to compare the sentiments after the first and after the second Triell?
 
-HALLO :)
 
 
 
