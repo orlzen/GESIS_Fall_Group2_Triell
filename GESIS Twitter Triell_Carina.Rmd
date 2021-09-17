@@ -109,3 +109,56 @@ triell_all %>%
   arrange(desc(sent))
 ```
 
+#Keyness
+
+```{r}
+triell_corpus <- corpus(triell_all)
+
+triell_dfm  <-  tokens(triell_corpus) %>% dfm() %>% dfm_group(triell_all$candidate)
+
+head(textstat_keyness(triell_dfm, target="Baerbock",
+                      measure="chi2",sort=T), n=20)
+
+head(textstat_keyness(triell_dfm, target="Scholz",
+                      measure="chi2",sort=T), n=20)
+
+head(textstat_keyness(triell_dfm, target="Laschet",
+                      measure="chi2",sort=T), n=20)
+
+#Wordclouds on keyness analyses
+library(wordcloud)
+library(wordcloud2)
+library(RColorBrewer)
+library(dplyr)
+
+#Wordclouds on keyness analysis Baerbock
+#Package wordcloud
+keyness_b <- head(textstat_keyness(triell_dfm, target="Baerbock", measure="chi2",sort=T), n=20)
+keyness_b <- keyness_b[-c(1, 2),]#removing "#baerbock" and "baerbock"
+wordcloud(keyness_b$feature, keyness_b$chi2, colors="green")
+
+#Package wordcloud2
+keyness_b_short <- subset(keyness_b, select=c(feature, chi2))
+wordcloud2(keyness_b_short, color = "random-dark")
+
+#Wordclouds on keyness analysis Scholz
+#Package wordcloud
+keyness_s <- head(textstat_keyness(triell_dfm, target="Scholz", measure="chi2",sort=T), n=20)
+keyness_s <- keyness_s[-c(1, 2),]#removing "#scholz" and "scholz"
+wordcloud(keyness_s$feature, keyness_s$chi2, colors="red")
+
+#Package wordcloud2
+keyness_s_short <- subset(keyness_s, select=c(feature, chi2))
+wordcloud2(keyness_s_short, color = "random-dark")
+
+#Wordclouds on keyness analysis Laschet
+#Package wordcloud
+keyness_l <- head(textstat_keyness(triell_dfm, target="Laschet", measure="chi2",sort=T), n=20)
+keyness_l <- keyness_l[-c(1, 2),]#removing "#laschet" and "laschet"
+wordcloud(keyness_l$feature, keyness_l$chi2, colors="black")
+
+#Package wordcloud2
+keyness_l_short <- subset(keyness_l, select=c(feature, chi2))
+wordcloud2(keyness_l_short, color = "random-dark")
+```
+
