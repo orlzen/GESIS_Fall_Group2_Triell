@@ -44,20 +44,25 @@ library(stringr) # Working with strings
 
 This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
 
-The original aim of this work was to analyse tweets after the first and the second Triell^[Triell is a portmanteau of "tri", i.e. "three" and "Duell".] in Germany (podium discussions before the "Bundestagswahl").
+The aim of this project is to analyse tweets surrounding the election of the Bundeskanzler:in in Germany, focusing on the three candidates Annalena Baerbock (Grüne), Olaf Scholz (SPD) and Armin Laschet (CDU).
 
 # Getting twitter data
 
-First, we load data from Twitter. Data from twitter is loaded using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf] or the `academictwitteR` package^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html]. 
+First, we loaded data from Twitter using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf]. (Another possibility would be to use the `academictwitteR`^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html], but we could not get it to work in the first tries, so stuck to `rtweet`. 
 
-```{r twitter_token}
+```{r twitter_token, include = FALSE}
 # source("twitter_token.R", local = knitr::knit_global())
 # load twitter tokens from separate file (not shared on github for privacy reasons)
 ```
 
-We search for tweets with the query "Triell", do not include retweets and only search for tweets from users with German language.
+As two persons from our group already had access to the Twitter API, we collected data twice:
 
-```{r get_tweets_save_large}
+1. Using simply the query "Triell" (no hashtag), collecting as many tweets as possible
+2. Using separate queries for the candidates and using a hashtab with "Triell"; e.g. "#triell AND baerbock"
+
+Both queries were limited to exclude retweets and only search for German language `include_rts = FALSE, lang = "de"`.
+
+```{r get_tweets_save_large, include = FALSE}
 # going for the big guns: trying to download 300k tweets
 # 
 # triell_large <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
@@ -78,7 +83,7 @@ We search for tweets with the query "Triell", do not include retweets and only s
 # saveRDS(triell_large, "triell_large.rds")
 ```
 
-```{r import_csv}
+```{r import_csv, include = FALSE}
 triell_large <- read.csv("data/triell_2021-09-16_large.csv")
 
 triell_b <- read.csv("data/triell_b_2021-09-15.csv")
@@ -86,6 +91,7 @@ triell_l <- read.csv("data/triell_l_2021-09-15.csv")
 triell_s <- read.csv("data/triell_s_2021-09-15.csv")
 ```
 
+The three separate dataframes for the three candidates were then combined together to get one combined dataset called `triell_all` (after adding an identifier variable called `candidate` to distinguish from which query the data comes).
 
 ```{r combine_separate_candidates_to_all}
 triell_b <- dplyr::mutate(triell_b, candidate = "Baerbock")
@@ -95,32 +101,37 @@ triell_s <- dplyr::mutate(triell_s, candidate = "Scholz")
 triell_all <- rbind(triell_b, triell_l, triell_s)
 ```
 
-This gives us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries.
+This gave us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries.
 
-```{r structures}
+```{r structures, include = FALSE}
 str(triell_all)
+
 str(triell_large)
 ```
 
 # Data cleaning and preparation
 
-## Removing punctuation etc. from tweet text
+<!-- ## Removing punctuation etc. from tweet text -->
 
+<!--
 ```{r cleaning}
 triell_all$text <-  gsub("https\\S*", "", triell_all$text)
 triell_all$text <-  gsub("@\\S*", "", triell_all$text) 
 triell_all$text <-  gsub("amp", "", triell_all$text) 
 triell_all$text <-  gsub("[\r\n]", "", triell_all$text)
-triell_all$text <-  gsub("[[:punct:]]", "", triell_all$text) # remove punctuation
+# triell_all$text <-  gsub("[[:punct:]]", "", triell_all$text) # remove punctuation
 
 triell_large$text <-  gsub("https\\S*", "", triell_large$text)
 triell_large$text <-  gsub("@\\S*", "", triell_large$text) 
 triell_large$text <-  gsub("amp", "", triell_large$text) 
 triell_large$text <-  gsub("[\r\n]", "", triell_large$text)
-triell_large$text <-  gsub("[[:punct:]]", "", triell_large$text) # remove punctuation
+# triell_large$text <-  gsub("[[:punct:]]", "", triell_large$text) # remove punctuation
 ```
+-->
 
 ## Add candidate identifiers
+
+In the dataset `triell_all` we were 
 
 ```{r candidate_id}
 # Add identifier variable for appearance of candidates in tweets
