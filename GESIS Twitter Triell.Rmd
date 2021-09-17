@@ -193,7 +193,7 @@ Our aim is to analyse the German twitter sphere after the first and the second T
 
 ### Syuzhet in German
 
-```{r syzhet}
+```{r syuzhet}
 # path_to_a_text_file <- system.file("extdata", "quijote.txt",package = "syuzhet")
 # my_text <- get_text_as_string(path_to_a_text_file)
 # char_v <- get_sentences(triell_all$text)
@@ -201,6 +201,26 @@ method <- "nrc"
 lang <- "german"
 triell_all$sentiment <- get_sentiment(triell_all$text, method=method, language=lang)
 triell_all$sentiment[1:10]
+
+triell_large$sentiment <- get_sentiment(triell_large$text, method=method, language=lang)
+triell_large$sentiment[1:10]
+```
+
+```{r sentiment_histo}
+triell_all %>%
+ ggplot() +
+  aes(x = sentiment) +
+  geom_histogram(bins = 30L) +
+  theme_minimal() +
+  ggtitle("Sentiments of all tweets together, by candidate")  +
+  facet_wrap(~ candidate)
+
+triell_large %>%
+ ggplot() +
+  aes(x = sentiment) +
+  geom_histogram(bins = 30L) +
+  theme_minimal() +
+  ggtitle("Sentiments of all tweets together (large dataset)")
 ```
 
 
