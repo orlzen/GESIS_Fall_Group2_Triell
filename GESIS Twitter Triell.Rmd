@@ -3,11 +3,11 @@ title: "Twitter communication with candidates for Bundeskanzler:in"
 author: Melanie Dietz, Julia Lück-Benz, Carina Weinmann, Lorenz Biberstein
 date: "`r format(Sys.Date(), '%d %b %Y')`"
 output:
+  pdf_document: default
   html_document:
     toc: true
     toc_depth: 3
     toc_float: true
-  pdf_document: default
 editor_options: 
   chunk_output_type: console
 ---
