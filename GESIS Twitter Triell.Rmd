@@ -36,6 +36,8 @@ library(topicmodels)
 library(udpipe) # for german lemmatization
 library(plotly)
 library(spacyr) # Für Lemmatisierung
+library(tidyr)
+library(stringr) # Working with strings
 ```
 
 
@@ -118,7 +120,17 @@ triell_large$text <-  gsub("[\r\n]", "", triell_large$text)
 triell_large$text <-  gsub("[[:punct:]]", "", triell_large$text) # remove punctuation
 ```
 
-## Adding date files
+## Add candidate identifiers
+
+```{r candidate_id}
+# Add identifier variable for appearance of candidates in tweets
+triell_large <- triell_large %>%
+  mutate(baerbock = ifelse(grepl("aerbock", text), 1, 0)) %>%
+  mutate(laschet = ifelse(grepl("aschet", text), 1, 0)) %>%
+  mutate(scholz = ifelse(grepl("olz", text), 1, 0))
+```
+
+## Adding dates
 
 First we check the first and last dates of our twitter datasets and we see - not surprising - that both dataframes have their newest entries from September 15th (day of download) and oldest entries from September 7th (as you can only access tweets from a certain number of days back via the twitter API).
 
