@@ -94,7 +94,8 @@ ARD <- ARDtriell %>%
   
 ARD %>%
  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
-    geom_line() + theme(legend.position="bottom") + labs(title = "Sentiments in Twitter Debate During ARD Triell", color='Candidates') + scale_color_manual(values = c("green", "black", "red")) + guides(x=guide_axis(n.dodge = 4))
+    geom_line() + theme(legend.position="bottom") + labs(title = "Sentiments in Twitter Debate During ARD Triell", color='Candidates') + scale_color_manual(values = c("green", "black", "red")) + theme(axis.text.x = element_text(size = 3, angle = 90), text = element_text(size=10))
+
 ```
 
 ```{r}
