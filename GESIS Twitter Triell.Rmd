@@ -25,24 +25,8 @@ library(rtweet)
 library(ggplot2)
 library(knitr) # for generating tables in markdown
 library(janitor) # for creating tables
-# library(wordcloud) # zur Erstellung von wordclouds
-# library(DataExplorer) # Für Exploratory Data Analysis
-# library(ggrepel)
-# library(kableExtra) # Für schöne Tabellen
-# library(scales)
-# library(Cairo) # Zum Export von Grafiken
-# library(data.table)
-# library(writexl) # Um Daten im Excel-Format zu exportieren
-# # library(quanteda.textmodels) # Functions for scaling and classifying textual data
-# # library(quanteda.textstats) # Statistics for textual data
-# # library(quanteda.textplot) # Statistics for textual data 
-# library(readtext) # companion package of quanteda for loading texts
 library(tm) # Für text mining
 library(tidytext) # for text mining
-# library(spacyr) # Für Lemmatisierung
-# # library(mallet) # For topic modelling
-# library(readxl) # For importing older Excel-saves
-# library(academictwitteR)
 library(data.table)
 library(quanteda) # Quantitative Analysis of Textual Data 
 library(quanteda.textstats)
@@ -51,6 +35,7 @@ library(dplyr) # For topic modeling
 library(topicmodels)
 library(udpipe) # for german lemmatization
 library(plotly)
+library(spacyr) # Für Lemmatisierung
 ```
 
 
@@ -71,46 +56,10 @@ First, we load data from Twitter. Data from twitter is loaded using the `rtweet`
 
 We search for tweets with the query "Triell", do not include retweets and only search for tweets from users with German language.
 
-```{r academictwitteR}
-# Trying package academicTwitteR, but could not get it to work
-
-# trielltweets <-
-#   academictwitteR::get_all_tweets(
-#     query = "Triell",
-#     start_tweets = "2020-01-01T00:00:00Z",
-#     end_tweets = "2020-09-14T00:00:00Z",
-#     file = "trielltweets",
-#     data_path = "data/",
-#     bind_tweets = FALSE,
-#     n = 10,
-#     country = "DE"
-#   )
-```
-
-```{r get_tweets_save}
-# Use working package rtweets. Load tweets (does not need to be done by everybodey, was only done once by Lorenz. Afterwards we can use the import from the .csv file below)
-# 
-# triell <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
-#                          include_rts = FALSE, # do not include retweets
-#                          lang = "de", # Only tweets from Twitter users with German language
-#                          retryonratelimit = TRUE,
-#                          geocode = lookup_coords("de"),
-#                          n = 10
-#                          )
-# 
-# # Save data as csv
-#  write_as_csv(triell,
-#               "data/triell_2021-09-14.csv",
-#               prepend_ids = TRUE,
-#               na = "",
-#               fileEncoding = "UTF-8"
-#               )
-```
-
 ```{r get_tweets_save_large}
 # going for the big guns: trying to download 300k tweets
 # 
-# triell <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
+# triell_large <- rtweet::search_tweets("#Triell", # Search tweets with search phrase "Triell"
 #                          include_rts = FALSE, # do not include retweets
 #                          lang = "de", # Only tweets from Twitter users with German language
 #                          retryonratelimit = TRUE,
@@ -124,36 +73,32 @@ We search for tweets with the query "Triell", do not include retweets and only s
 #               na = "",
 #               fileEncoding = "UTF-8"
 #               )
+
+# saveRDS(triell_large, "triell_large.rds")
 ```
 
 ```{r import_csv}
-# triell <- read.csv("data/triell_2021-09-14.csv")
-# triell <- read.csv("data/triell_2021-09-16_large.csv")
+triell_large <- read.csv("data/triell_2021-09-16_large.csv")
 
 triell_b <- read.csv("data/triell_b_2021-09-15.csv")
 triell_l <- read.csv("data/triell_l_2021-09-15.csv")
 triell_s <- read.csv("data/triell_s_2021-09-15.csv")
-# saveRDS(triell, "triell.rds")
 ```
 
 
-```{r candidate}
+```{r combine_separate_candidates_to_all}
 triell_b <- dplyr::mutate(triell_b, candidate = "Baerbock")
 triell_l <- dplyr::mutate(triell_l, candidate = "Laschet")
 triell_s <- dplyr::mutate(triell_s, candidate = "Scholz")
-```
 
-```{r bind_all}
 triell_all <- rbind(triell_b, triell_l, triell_s)
 ```
 
-
-This gives us a dataframe of `r count(triell_all)` entries.
+This gives us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries.
 
 ```{r}
 str(triell_all)
 ```
-
 
 # Data cleaning and preparation
 
@@ -165,108 +110,68 @@ triell_all$text <-  gsub("@\\S*", "", triell_all$text)
 triell_all$text <-  gsub("amp", "", triell_all$text) 
 triell_all$text <-  gsub("[\r\n]", "", triell_all$text)
 triell_all$text <-  gsub("[[:punct:]]", "", triell_all$text) # remove punctuation
+
+triell_large$text <-  gsub("https\\S*", "", triell_large$text)
+triell_large$text <-  gsub("@\\S*", "", triell_large$text) 
+triell_large$text <-  gsub("amp", "", triell_large$text) 
+triell_large$text <-  gsub("[\r\n]", "", triell_large$text)
+triell_large$text <-  gsub("[[:punct:]]", "", triell_large$text) # remove punctuation
 ```
 
 ## Adding date files
 
-First we check the first and last dates of our twitter dataset.
+First we check the first and last dates of our twitter datasets and we see - not surprising - that both dataframes have their newest entries from September 15th (day of download) and oldest entries from September 7th (as you can only access tweets from a certain number of days back via the twitter API).
 
 ```{r}
-# head(triell$created_at)
-# tail(triell$created_at)
+head(triell_all$created_at)
+tail(triell_all$created_at)
+
+head(triell_large$created_at)
+tail(triell_large$created_at)
 ```
 
+Next, we can isolate the single days of the `created_at` for later usage.
 
-```{r change_date}
-# Isolate month
-# triell$month <- substr(triell$created_at, 1, 7)
-# 
-# # Isolate day
-# triell$day <- substr(triell$created_at, 1, 10)
+```{r isolate_days}
+triell_all$day <- substr(triell_all$created_at, 1, 10)
+
+triell_large$day <- substr(triell_large$created_at, 1, 10)
 ```
-
-```{r triell_dates}
-# Add variable for when the tweet was sent (before first triell, after the first triell, after second triell etc.)
-
-# First Triell: 2021-08-29 
-# Beginn 20:15 Uhr
-# Dauer 1:55h -> End: 22:10
-
-
-# Second Triell: 2021-09-12
-# Beginn 20:15 Uhr
-# Dauer 1:36h -> End: 21:51
-
-# Suggestion Lorenz: 
-# 1. Before first triell
-# 2. During first triell
-# 3. After first triell and before second triell
-# 4. During second triell
-# 5. After second triell
-
-# triell$phase <- triell %>%
-#   filter(created_at < )
-
-
-```
-
 
 ## Generate corpus & wordlists
 
 ```{r generate_wordlist_text}
-triell_text <- triell_all %>%
+triell_all_text <- triell_all %>%
+  select(name, text, created_at) %>%
+  unnest_tokens(word, text)
+# new object, only words and names of twitter accounts
+
+triell_large_text <- triell_large %>%
   select(name, text, created_at) %>%
   unnest_tokens(word, text)
 # new object, only words and names of twitter accounts
 ```
 
-Converting the dataframe to a wordlist gives us a new dataframe with `r count(triell_text)` entries.
+Converting the dataframe to a wordlist gives us a new dataframe with `r count(triell_text)` entries (for `triell_all`) and `r count (triell_large)` (`triell_large`).
 
 ```{r}
- str(triell_text)
+str(triell_all_text)
+
+str(triell_large_text)
 ```
 
-We can also convert the `triell` dataframe into a corpus.
+We can also convert the `triell` dataframes into a corpus.
 
 ```{r}
-# triellcorpus <- corpus(triell_all$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
+triell_all_corpus <- corpus(triell_all$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
+
+triell_large_corpus <- corpus(triell_large$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
 ```
 
 ```{r}
-# str(triellcorpus)
+str(triell_all_corpus)
+str(triell_large_corpus)
 ```
-
-## Generate german sentiment dictionaries
-
-```{r}
-# ud_model <- udpipe_download_model("german")
-# ud_model <- udpipe_load_model(ud_model)
-# 
-# x <- udpipe_annotate(ud_model, triell$text)
-# x <- as.data.frame(x)
-```
-
-
-```{r generate_word_list}
-# positive.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Positive.txt", 
-#                             what = "char", 
-#                             sep = "\n", 
-#                             skip = 35, 
-#                             quiet = T)
-# 
-# negative.woerter.bl <- scan("dictionaries/SentiWS_v2.0_Negative.txt", 
-#                             what = "char", 
-#                             sep = "\n", 
-#                             skip = 35, 
-#                             quiet = T)
-# 
-# sentiment.lexikon <- dictionary(list(positive = positive.woerter.bl, negative = negative.woerter.bl))
-# str(sentiment.lexikon)
-# 
-# meine.dfm.sentiment <- dfm(triellcorpus, dictionary = sentiment.lexikon)
-# meine.dfm.sentiment
-```
-
 
 # Data analysis
 
