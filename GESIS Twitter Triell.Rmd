@@ -58,7 +58,7 @@ First, we loaded data from Twitter using the `rtweet` package^[https://cran.r-pr
 As two persons from our group already had access to the Twitter API, we collected data twice:
 
 1. Using simply the query "Triell" (no hashtag), collecting as many tweets as possible
-2. Using separate queries for the candidates and using a hashtab with "Triell"; e.g. "#triell AND baerbock"
+2. Using separate queries for the candidates and using a hashtab with "Triell"; e.g. "`#triell AND baerbock`"
 
 Both queries were limited to exclude retweets and only search for German language `include_rts = FALSE, lang = "de"`.
 
@@ -101,7 +101,7 @@ triell_s <- dplyr::mutate(triell_s, candidate = "Scholz")
 triell_all <- rbind(triell_b, triell_l, triell_s)
 ```
 
-This gave us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries.
+This gave us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries. We subsequently usually ran our following analyses for both of these datasets as we found it interesting to compare the results based on the slightly different search queries and results (hashtag vs. no hashtab, searching for candidates' names specifically vs. only for "Triell").
 
 ```{r structures, include = FALSE}
 str(triell_all)
@@ -131,7 +131,9 @@ triell_large$text <-  gsub("[\r\n]", "", triell_large$text)
 
 ## Add candidate identifiers
 
-In the dataset `triell_all` we were 
+In the dataset `triell_all` we were able to identify candidates based on the Twitter query (e.g. `#triell AND baerbock`). But as it was possible to have multiple tweets naming not only one but multiple candidated, this identification was not very precise. For this reason, we added another variable searching for each candidate in the text of the TWeet. This gave us three separate variables showing us, whether each of the candidates was present in the tweets (variable `baerbock`, `laschet` and `scholz`).
+
+These three variables were then combined to a new variable called `candidate_comb` to show the combination of the candidates' appearances in the tweets (e.g. Baerbock + Laschet, Baerbock + Scholz + Laschet etc.).
 
 ```{r candidate_id}
 # Add identifier variable for appearance of candidates in tweets
@@ -169,9 +171,11 @@ labels = c("Baerbock", "Laschet", "Scholz", "Baerbock + Laschet", "Baerbock + Sc
 
 ## Adding dates
 
+<!-- ADD CODE FOR SEPARATING TWEETS BEFORE, DURING AND AFTER SECOND TRIELL FROM JULIA HERE! -->
+
 First we check the first and last dates of our twitter datasets and we see - not surprising - that both dataframes have their newest entries from September 15th (day of download) and oldest entries from September 7th (as you can only access tweets from a certain number of days back via the twitter API).
 
-```{r}
+```{r, include = FALSE}
 head(triell_all$created_at)
 tail(triell_all$created_at)
 
@@ -179,7 +183,7 @@ head(triell_large$created_at)
 tail(triell_large$created_at)
 ```
 
-Next, we can isolate the single days of the `created_at` for later usage.
+Next, we isolated the single days of the `created_at` for later usage.
 
 ```{r isolate_days}
 triell_all$day <- substr(triell_all$created_at, 1, 10)
@@ -188,6 +192,8 @@ triell_large$day <- substr(triell_large$created_at, 1, 10)
 ```
 
 ## Generate corpus & wordlists
+
+For potential later analysis we also created separate objects isolating each word of the tweets, together with the users and tweet time (`created_at`).
 
 ```{r generate_wordlist_text}
 triell_all_text <- triell_all %>%
@@ -203,21 +209,27 @@ triell_large_text <- triell_large %>%
 
 Converting the dataframe to a wordlist gives us a new dataframe with `r count(triell_all_text)` entries (for `triell_all`) and `r count (triell_large_text)` (`triell_large`).
 
-```{r}
+```{r, include = FALSE}
 str(triell_all_text)
 
 str(triell_large_text)
 ```
 
-We can also convert the `triell` dataframes into a corpus, but would need a German lemmatization word list.
+We could also convert the dataframes into corporae, but to properly do this we would need a German lemmatization word list.
 
 ```{r}
-# triell_all_corpus <- corpus(triell_all$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
-# 
-# triell_large_corpus <- corpus(triell_large$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
+triell_all_corpus <- corpus(triell_all$text) %>% 
+  tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% 
+  tokens_tolower() # %>% 
+# tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
+
+triell_large_corpus <- corpus(triell_large$text) %>% 
+  tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% 
+  tokens_tolower() # %>% 
+#  tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
 ```
 
-```{r}
+```{r, include = FALSE}
 # str(triell_all_corpus)
 # str(triell_large_corpus)
 ```
