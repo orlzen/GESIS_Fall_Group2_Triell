@@ -242,64 +242,79 @@ The aim of the data analysis was to find differences in the tweets, depending on
 
 ### Differences by candidates' mentions
 
-For this we get the sentiments of all the tweets, using the `Syuzhet` package, which can also be used with German (setting `lang <- "german"`)^[Although we do not know how precise this is.].
+For this we get the sentiments of all the tweets, using the `Syuzhet` package, which can also be used with German (setting `lang <- "german"` and using `method = "nrc"` instead of `affin`, as `affin` is not availiable in German).
+
+In the following code chunk we execute the sentiment analysis for the the two datasets ("large" and "all").
 
 ```{r create_sentiments}
-# path_to_a_text_file <- system.file("extdata", "quijote.txt",package = "syuzhet")
-# my_text <- get_text_as_string(path_to_a_text_file)
-# char_v <- get_sentences(triell_all$text)
-method <- "nrc"
-lang <- "german"
-triell_all$sentiment <- get_sentiment(triell_all$text, method=method, language=lang)
+triell_all$sentiment <- get_sentiment(triell_all$text, method="nrc", language="german")
 triell_all$sentiment[1:10]
 
-triell_large$sentiment <- get_sentiment(triell_large$text, method=method, language=lang)
+triell_large$sentiment <- get_sentiment(triell_large$text, method="nrc", language="german")
 triell_large$sentiment[1:10]
 ```
 
+The mean of the sentiment values can then be calculated for each of the three candidates. To check the distribution of the sentiments by candidate we can graph the distribution as histograms. The sentiment scores range from `r min(triell_large$sentiment)` to `r max(triell_large$sentiment)` for "large" dataset and `r min(triell_all$sentiment)` to `r max(triell_all$sentiment)` for the "all" dataset.
+
+We can also visualise the distributions as histograms, as seen in the following figures.
+
 ```{r sentiment_histo}
 triell_all %>%
- ggplot() +
+  ggplot() +
   aes(x = sentiment) +
-  geom_histogram(bins = 30L) +
+  geom_histogram(bins = 20L) +
   theme_minimal() +
-  ggtitle("Sentiments of all tweets together, by candidate")  +
+  ggtitle("Sentiments of all tweets together (data 'all')")
+
+triell_large %>%
+  ggplot() +
+  aes(x = sentiment) +
+  geom_histogram(bins = 20L) +
+  theme_minimal() +
+  ggtitle("Sentiments of all tweets together (data 'large')")
+
+triell_all %>%
+  ggplot() +
+  aes(x = sentiment) +
+  geom_histogram(bins = 20L) +
+  theme_minimal() +
+  ggtitle("Sentiments of all tweets together, by candidate (data 'all')")  +
   facet_wrap(~ candidate)
 
 triell_large %>%
- ggplot() +
+  filter(!is.na(candidate_comb)) %>%
+  ggplot() +
   aes(x = sentiment) +
-  geom_histogram(bins = 30L) +
+  geom_histogram(bins = 20L) +
   theme_minimal() +
-  ggtitle("Sentiments of all tweets together (large dataset)")
+  ggtitle("Sentiments of all tweets together (data 'large')")  +
+  facet_wrap(~ candidate_comb)
 ```
 
-```{r sentiment_candidate}
+When comparing the means by candidate, we see that the mean of the sentiments are very close together for all three candidates.
+
+```{r candidate_means}
 # mean shows very small differences only between all three candidates
 triell_all %>% 
   group_by(candidate) %>% 
-  summarise(sent=mean(sentiment), n=n()) %>% 
+  summarise(sent=mean(sentiment), n=n())%>% 
   arrange(desc(n)) %>% 
-  head(n=20) %>% 
-  arrange(desc(sent))
-
-# median confirms this; all three have a median of zero
-triell_all %>% 
-  group_by(candidate) %>% 
-  summarise(sent=median(sentiment), n=n()) %>% 
-  arrange(desc(n)) %>% 
-  head(n=20) %>% 
   arrange(desc(sent))
 ```
 
+However, when not only distinguishing by dataset (twitter query), but by appearance of the candidates' names, we _do_ find some interesting differences. Depending on which candidates are named (alone or together) in the tweets, we get different means for the sentiment scores. Table \ref{tab:all_mean} shows the mean values for the candidates combination of names for the data "all", while table \ref{tab:all_mean} shows the same information for data "large", but with included `NA`, which in this case signifies tweets which have the query "Triell" in the text, but none of the candidate's names.
+
 ```{r sentiment_candidate_combined}
 triell_all %>% 
-#  filter(!is.na(candidate_comb)) %>%
+  filter(!is.na(candidate_comb)) %>%
   group_by(candidate_comb) %>% 
   summarise(sent=mean(sentiment), n=n()) %>% 
   arrange(desc(n)) %>% 
   head(n=20) %>% 
-  arrange(desc(sent))
+  arrange(desc(sent))%>%
+  knitr::kable(
+    caption = "Mean sentiment scores by combination of candidates' names (data 'all')\\label{tab:all_mean}",
+  )
 
 triell_large %>% 
 #  filter(!is.na(candidate_comb)) %>%
@@ -307,22 +322,30 @@ triell_large %>%
   summarise(sent=mean(sentiment), n=n()) %>% 
   arrange(desc(n)) %>% 
   head(n=20) %>% 
-  arrange(desc(sent))
+  arrange(desc(sent))%>%
+  knitr::kable(
+  caption = "Mean sentiment scores by combination of candidates' names (data 'large')\\label{tab:large_mean}",
+  )
 ```
 
 ### Differences by time of tweet
 
 ## Keyness
 
+We can run a keyness analysis to find differences in th e 
+
 ### Differences by candidates' mentions
 
-Running a keyness analysis for the three candidates.
+Running a keyness analysis for the three candidates to check for differences in the keywords. This is first done for the data "all", i.e. where tweets were collected with the queries "Triell AND baerbock" for instance.
 
-```{r}
+```{r keyness_prepare, include = FALSE}
 triell_corpus <- corpus(triell_all)
 
 triell_dfm  <-  tokens(triell_corpus) %>% dfm() %>% dfm_group(triell_all$candidate)
+```
 
+
+```{r keyness_exe}
 head(textstat_keyness(triell_dfm, target="Baerbock",
                       measure="chi2",sort=T), n=20)
 
@@ -332,6 +355,7 @@ head(textstat_keyness(triell_dfm, target="Scholz",
 head(textstat_keyness(triell_dfm, target="Laschet",
                       measure="chi2",sort=T), n=20)
 ```
+
 
 ### Differences by time of tweet
 
@@ -347,5 +371,9 @@ head(textstat_keyness(triell_dfm, target="Laschet",
 
 ### Differences by time of tweet
 
+# Open questions
 
+## Research
+
+## Methodology
 
