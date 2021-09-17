@@ -48,7 +48,7 @@ This is a group work of group \#2 in the GESIS fall school "Introduction to Comp
 
 The aim of this project is to analyse tweets surrounding the election of the Bundeskanzler:in in Germany, focusing on the three candidates Annalena Baerbock (Grüne), Olaf Scholz (SPD) and Armin Laschet (CDU). We tried to answer the following broad research question:
 
-> *How does the Twitter discussion About the three candidates in the context of the ARD triell Looks like?*
+> *What does the Twitter discussion about the three candidates in the context of the ARD triell look like?*
 
 # Getting Twitter data
 
@@ -135,7 +135,7 @@ triell_large$text <-  gsub("[\r\n]", "", triell_large$text)
 
 ## Add candidate identifiers
 
-In the dataset `triell_all` we were able to identify candidates based on the Twitter query (e.g. `#triell AND baerbock`). But as it was possible to have multiple tweets naming not only one but multiple candidated, this identification was not very precise. For this reason, we added another variable searching for each candidate in the text of the TWeet. This gave us three separate variables showing us, whether each of the candidates was present in the tweets (variable `baerbock`, `laschet` and `scholz`).
+In the dataset `triell_all` we were able to identify candidates based on the Twitter query (e.g. `#triell AND baerbock`). But as it was possible to have multiple tweets naming not only one but multiple candidated, this identification was not very precise. For this reason, we added another variable searching for each candidate in the text of the Tweet. This gave us three separate variables showing us, whether each of the candidates was present in the tweets (variable `baerbock`, `laschet` and `scholz`).
 
 These three variables were then combined to a new variable called `candidate_comb` to show the combination of the candidates' appearances in the tweets (e.g. Baerbock + Laschet, Baerbock + Scholz + Laschet etc.).
 
@@ -401,7 +401,7 @@ ARD %>%
 
 ## Keyness
 
-We can run a keyness analysis to find differences in th e
+We can run a keyness analysis to find differences between the different candidates.
 
 ### Differences by candidates' mentions
 
@@ -486,3 +486,11 @@ ggplot(data = df_tablRet) +
        x = "Candidate combination", 
        y = "Number of retweets")
 ```
+
+# Feedback
+
+-   Twitter has a new academic API which gives access to more data
+-   Facet plots: Use normalised y-axis, makes comparison easier
+-   Language is generally skewed towards the positiv, which is why the values are more on the positive side
+-   "Cool group project! You could also compare the mean sentiment for candidates on Twitter with the popularity ratings in the ZDF right after the Triell."
+
