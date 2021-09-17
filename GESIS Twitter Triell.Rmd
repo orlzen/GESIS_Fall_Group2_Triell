@@ -126,8 +126,34 @@ triell_large$text <-  gsub("[[:punct:]]", "", triell_large$text) # remove punctu
 # Add identifier variable for appearance of candidates in tweets
 triell_large <- triell_large %>%
   mutate(baerbock = ifelse(grepl("aerbock", text), 1, 0)) %>%
-  mutate(laschet = ifelse(grepl("aschet", text), 1, 0)) %>%
-  mutate(scholz = ifelse(grepl("olz", text), 1, 0))
+  mutate(laschet = ifelse(grepl("aschet", text), 10, 0)) %>%
+  mutate(scholz = ifelse(grepl("olz", text), 100, 0))
+
+# Combine id variables for all three candidates
+triel_large <- triell_large %>%
+  mutate(candidate_comb = baerbock + laschet + scholz)
+
+# define labels to combination of appearance of candidates
+triel_large$candidate_comb <- factor(triel_large$candidate_comb,
+levels = c(1, 10, 100, 11, 101, 110, 111),
+labels = c("Baerbock", "Laschet", "Scholz", "Baerbock + Laschet", "Baerbock + Scholz", "Laschet + Scholz", "Baerbock + Scholz + Laschet"))
+
+# do the same for data "triell_all"
+
+# Add identifier variable for appearance of candidates in tweets
+triell_all <- triell_all %>%
+  mutate(baerbock = ifelse(grepl("aerbock", text), 1, 0)) %>%
+  mutate(laschet = ifelse(grepl("aschet", text), 10, 0)) %>%
+  mutate(scholz = ifelse(grepl("olz", text), 100, 0))
+
+# Combine id variables for all three candidates
+triell_all <- triell_all %>%
+  mutate(candidate_comb = baerbock + laschet + scholz)
+
+# define labels to combination of appearance of candidates
+triell_all$candidate_comb <- factor(triell_all$candidate_comb,
+levels = c(1, 10, 100, 11, 101, 110, 111),
+labels = c("Baerbock", "Laschet", "Scholz", "Baerbock + Laschet", "Baerbock + Scholz", "Laschet + Scholz", "Baerbock + Scholz + Laschet"))
 ```
 
 ## Adding dates
@@ -225,9 +251,18 @@ triell_large %>%
 
 
 ```{r sentiment_candidate}
+# mean shows very small differences only between all three candidates
+triell_all %>% 
+  filter(!is.na(candidate_comb)) %>% # filter out NAs
+  group_by(candidate_comb) %>% 
+  summarise(sent=mean(sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% head(n=20) %>% 
+  arrange(desc(sent))
+
+# median confirms this; all three have a median of zero
 triell_all %>% 
   group_by(candidate) %>% 
-  summarise(sent=mean(sentiment), n=n()) %>% 
+  summarise(sent=median(sentiment), n=n()) %>% 
   arrange(desc(n)) %>% head(n=20) %>% 
   arrange(desc(sent))
 ```
