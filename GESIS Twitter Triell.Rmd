@@ -12,7 +12,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include = TRUE}
+```{r setup, include = FALSE}
 # Global setup for all R chunks in this file
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(message = FALSE)
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can be taken out here later
 ```
 
-```{r libraries}
+```{r libraries, include = FALSE}
 library(rtweet)
 library(ggplot2)
 library(knitr) # for generating tables in markdown
