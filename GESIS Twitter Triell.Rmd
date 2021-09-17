@@ -1,5 +1,5 @@
 ---
-title: "Twitter communication after Triell"
+title: "Twitter communication with candidates for Bundeskanzler:in"
 author: Melanie Dietz, Julia Lück-Benz, Carina Weinmann, Lorenz Biberstein
 date: "`r format(Sys.Date(), '%d %b %Y')`"
 output:
@@ -12,7 +12,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r setup, include = FALSE}
+```{r setup, include = TRUE}
 # Global setup for all R chunks in this file
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(message = FALSE)
@@ -45,7 +45,7 @@ library(stringr) # Working with strings
 
 This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
 
-The aim of this work is to analyse tweets after the first and the second Triell^[Triell is a portmanteau of "tri", i.e. "three" and "Duell".] in Germany (podium discussions before the "Bundestagswahl").
+The original aim of this work was to analyse tweets after the first and the second Triell^[Triell is a portmanteau of "tri", i.e. "three" and "Duell".] in Germany (podium discussions before the "Bundestagswahl").
 
 # Getting twitter data
 
@@ -98,8 +98,9 @@ triell_all <- rbind(triell_b, triell_l, triell_s)
 
 This gives us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries.
 
-```{r}
+```{r structures, echo = FALSE}
 str(triell_all)
+str(triell_large)
 ```
 
 # Data cleaning and preparation
@@ -130,11 +131,11 @@ triell_large <- triell_large %>%
   mutate(scholz = ifelse(grepl("olz", text), 100, 0))
 
 # Combine id variables for all three candidates
-triel_large <- triell_large %>%
+triell_large <- triell_large %>%
   mutate(candidate_comb = baerbock + laschet + scholz)
 
 # define labels to combination of appearance of candidates
-triel_large$candidate_comb <- factor(triel_large$candidate_comb,
+triell_large$candidate_comb <- factor(triell_large$candidate_comb,
 levels = c(1, 10, 100, 11, 101, 110, 111),
 labels = c("Baerbock", "Laschet", "Scholz", "Baerbock + Laschet", "Baerbock + Scholz", "Laschet + Scholz", "Baerbock + Scholz + Laschet"))
 
@@ -190,7 +191,7 @@ triell_large_text <- triell_large %>%
 # new object, only words and names of twitter accounts
 ```
 
-Converting the dataframe to a wordlist gives us a new dataframe with `r count(triell_text)` entries (for `triell_all`) and `r count (triell_large)` (`triell_large`).
+Converting the dataframe to a wordlist gives us a new dataframe with `r count(triell_all_text)` entries (for `triell_all`) and `r count (triell_large_text)` (`triell_large`).
 
 ```{r}
 str(triell_all_text)
@@ -198,28 +199,28 @@ str(triell_all_text)
 str(triell_large_text)
 ```
 
-We can also convert the `triell` dataframes into a corpus.
+We can also convert the `triell` dataframes into a corpus, but would need a German lemmatization word list.
 
 ```{r}
-triell_all_corpus <- corpus(triell_all$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
-
-triell_large_corpus <- corpus(triell_large$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
+# triell_all_corpus <- corpus(triell_all$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
+# 
+# triell_large_corpus <- corpus(triell_large$text) %>% tokens(.,remove_punct=TRUE,remove_numbers=TRUE,remove_symbols = TRUE) %>% tokens_tolower() %>% tokens_replace(lemma_data$inflected_form, lemma_data$lemma, valuetype = "fixed")
 ```
 
 ```{r}
-str(triell_all_corpus)
-str(triell_large_corpus)
+# str(triell_all_corpus)
+# str(triell_large_corpus)
 ```
 
 # Data analysis
 
-Our aim is to analyse the German twitter sphere after the first and the second Triell to find differences in the tweets (sentiment analysis etc.).
+We will try to find differences in the tweets, depending on who (which candidate, or which comibination of candidates is mentioned in the tweets).
 
-## Sentiment analysis?
+## Sentiment analysis (using Syuzhet in German)
 
-### Syuzhet in German
+For this we get the sentiments of all the tweets, using the `Syuzhet` package, which can also be used with German (setting `lang <- "german"`)^[Although we do not know how precise this is.].
 
-```{r syuzhet}
+```{r create_sentiments}
 # path_to_a_text_file <- system.file("extdata", "quijote.txt",package = "syuzhet")
 # my_text <- get_text_as_string(path_to_a_text_file)
 # char_v <- get_sentences(triell_all$text)
@@ -253,17 +254,36 @@ triell_large %>%
 ```{r sentiment_candidate}
 # mean shows very small differences only between all three candidates
 triell_all %>% 
-  filter(!is.na(candidate_comb)) %>% # filter out NAs
-  group_by(candidate_comb) %>% 
+  group_by(candidate) %>% 
   summarise(sent=mean(sentiment), n=n()) %>% 
-  arrange(desc(n)) %>% head(n=20) %>% 
+  arrange(desc(n)) %>% 
+  head(n=20) %>% 
   arrange(desc(sent))
 
 # median confirms this; all three have a median of zero
 triell_all %>% 
   group_by(candidate) %>% 
   summarise(sent=median(sentiment), n=n()) %>% 
-  arrange(desc(n)) %>% head(n=20) %>% 
+  arrange(desc(n)) %>% 
+  head(n=20) %>% 
+  arrange(desc(sent))
+```
+
+```{r sentiment_candidate_combined}
+triell_all %>% 
+  filter(!is.na(candidate_comb)) %>%
+  group_by(candidate_comb) %>% 
+  summarise(sent=mean(sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% 
+  head(n=20) %>% 
+  arrange(desc(sent))
+
+triell_large %>% 
+  filter(!is.na(candidate_comb)) %>%
+  group_by(candidate_comb) %>% 
+  summarise(sent=mean(sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% 
+  head(n=20) %>% 
   arrange(desc(sent))
 ```
 
