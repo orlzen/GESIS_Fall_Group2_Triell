@@ -101,7 +101,7 @@ triell_s <- dplyr::mutate(triell_s, candidate = "Scholz")
 triell_all <- rbind(triell_b, triell_l, triell_s)
 ```
 
-This gave us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries. We subsequently usually ran our following analyses for both of these datasets as we found it interesting to compare the results based on the slightly different search queries and results (hashtag vs. no hashtab, searching for candidates' names specifically vs. only for "Triell").
+This gave us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries. _We subsequently usually ran our following analyses for both of these datasets as we found it interesting to compare the results based on the slightly different search queries and results (hashtag vs. no hashtab, searching for candidates' names specifically vs. only for "Triell")._
 
 ```{r structures, include = FALSE}
 str(triell_all)
@@ -236,9 +236,11 @@ triell_large_corpus <- corpus(triell_large$text) %>%
 
 # Data analysis
 
-We will try to find differences in the tweets, depending on who (which candidate, or which comibination of candidates is mentioned in the tweets).
+The aim of the data analysis was to find differences in the tweets, depending on who (which candidate, or which comibination of candidates is mentioned in the tweets) and on the time of sending the tweet.
 
 ## Sentiment analysis (using Syuzhet in German)
+
+### Differences by candidates' mentions
 
 For this we get the sentiments of all the tweets, using the `Syuzhet` package, which can also be used with German (setting `lang <- "german"`)^[Although we do not know how precise this is.].
 
@@ -308,7 +310,11 @@ triell_large %>%
   arrange(desc(sent))
 ```
 
+### Differences by time of tweet
+
 ## Keyness
+
+### Differences by candidates' mentions
 
 Running a keyness analysis for the three candidates.
 
@@ -327,7 +333,19 @@ head(textstat_keyness(triell_dfm, target="Laschet",
                       measure="chi2",sort=T), n=20)
 ```
 
-## Who tweets what?
+### Differences by time of tweet
+
+## Reaction to tweets: Retweets and likes
+
+### Differences by candidates' mentions
+
+### Differences by time of tweet
+
+## Who tweets what? Analysing sender of tweets
+
+### Differences by candidates' mentions
+
+### Differences by time of tweet
 
 
 
