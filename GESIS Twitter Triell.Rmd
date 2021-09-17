@@ -40,7 +40,6 @@ library(tidyr)
 library(stringr) # Working with strings
 ```
 
-
 # Introduction
 
 This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
@@ -250,7 +249,6 @@ triell_large %>%
   ggtitle("Sentiments of all tweets together (large dataset)")
 ```
 
-
 ```{r sentiment_candidate}
 # mean shows very small differences only between all three candidates
 triell_all %>% 
@@ -271,7 +269,7 @@ triell_all %>%
 
 ```{r sentiment_candidate_combined}
 triell_all %>% 
-  filter(!is.na(candidate_comb)) %>%
+#  filter(!is.na(candidate_comb)) %>%
   group_by(candidate_comb) %>% 
   summarise(sent=mean(sentiment), n=n()) %>% 
   arrange(desc(n)) %>% 
@@ -279,12 +277,34 @@ triell_all %>%
   arrange(desc(sent))
 
 triell_large %>% 
-  filter(!is.na(candidate_comb)) %>%
+#  filter(!is.na(candidate_comb)) %>%
   group_by(candidate_comb) %>% 
   summarise(sent=mean(sentiment), n=n()) %>% 
   arrange(desc(n)) %>% 
   head(n=20) %>% 
   arrange(desc(sent))
 ```
+
+## Keyness
+
+Running a keyness analysis for the three candidates.
+
+```{r}
+triell_corpus <- corpus(triell_all)
+
+triell_dfm  <-  tokens(triell_corpus) %>% dfm() %>% dfm_group(triell_all$candidate)
+
+head(textstat_keyness(triell_dfm, target="Baerbock",
+                      measure="chi2",sort=T), n=20)
+
+head(textstat_keyness(triell_dfm, target="Scholz",
+                      measure="chi2",sort=T), n=20)
+
+head(textstat_keyness(triell_dfm, target="Laschet",
+                      measure="chi2",sort=T), n=20)
+```
+
+## Who tweets what?
+
 
 
