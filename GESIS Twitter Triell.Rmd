@@ -50,7 +50,7 @@ The aim of this project is to analyse tweets surrounding the election of the Bun
 
 > *How does the Twitter discussion About the three candidates in the context of the ARD triell Looks like?*
 
-# Getting twitter data
+# Getting Twitter data
 
 First, we loaded data from Twitter using the `rtweet` package[^1]. (Another possibility would be to use the `academictwitteR`[^2], but we could not get it to work in the first tries, so stuck to `rtweet`.
 
@@ -211,54 +211,6 @@ triellARDlive <- subset(triellARD, triellARD$time > "20:14")
 ARDtriell <- subset(triellARDlive, triellARDlive$time < "21:55")
 ```
 
-The sentiments during the Triell can then be plotted over time.
-
-```{r}
-method <- "nrc"
-lang <- "german"
-ARDtriell$sentiment <- get_sentiment(ARDtriell$text, method=method, language=lang)
-ARDtriell$sentiment[1:10]
-
-ggplot(data = ARDtriell, aes(x= time, y= sentiment)) + geom_point() +
-  stat_summary(aes(y = sentiment,group=1), fun.y=mean, colour="red", geom="line",group=1)
-
-ARD <- ARDtriell %>%
-  filter(candidate_comb %in% c("Baerbock", "Laschet", "Scholz"))
-  
-ARD %>%
- ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
-  geom_line() + theme(legend.position="bottom") + 
-  labs(title = "Sentiments in Twitter Debate During ARD Triell", 
-       color='Candidates', 
-       x = "Time", 
-       y = "Sentiment") + 
-  scale_color_manual(values = c("green", "black", "red")) + 
-  theme(axis.text.x = element_text(size = 3, 
-                                   angle = 90), 
-        text = element_text(size=10))
-
-# ARD_b <- ARDtriell %>%
-#   filter(candidate_comb %in% c("Baerbock"))
-#   
-# ARD_b %>%
-#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
-#     geom_line()
-# 
-# ARD_l <- ARDtriell %>%
-#   filter(candidate_comb %in% c("Laschet"))
-#   
-# ARD_l %>%
-#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
-#     geom_line()
-# 
-# ARD_s <- ARDtriell %>%
-#   filter(candidate_comb %in% c("Scholz"))
-#   
-# ARD_s %>%
-#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
-#     geom_line()
-```
-
 ## Generate corpus & wordlists
 
 For potential later analysis we also created separate objects isolating each word of the tweets, together with the users and tweet time (`created_at`).
@@ -398,6 +350,55 @@ triell_large %>%
 
 ### Differences by time of tweet
 
+The sentiments during the Triell can then be plotted over time (in this case by minute).
+
+```{r}
+method <- "nrc"
+lang <- "german"
+ARDtriell$sentiment <- get_sentiment(ARDtriell$text, method=method, language=lang)
+ARDtriell$sentiment[1:10]
+
+ggplot(data = ARDtriell, aes(x= time, y= sentiment)) + geom_point() +
+  stat_summary(aes(y = sentiment,group=1), fun.y=mean, colour="red", geom="line",group=1)
+
+ARD <- ARDtriell %>%
+  filter(candidate_comb %in% c("Baerbock", "Laschet", "Scholz"))
+  
+ARD %>%
+ ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+  geom_line() + theme(legend.position="bottom") + 
+  labs(title = "Sentiments in Twitter Debate During ARD Triell", 
+       color='Candidates', 
+       x = "Time", 
+       y = "Sentiment") + 
+  scale_color_manual(values = c("green", "black", "red")) + 
+  theme(axis.text.x = element_text(size = 3, 
+                                   angle = 90), 
+        text = element_text(size=10))
+
+# ARD_b <- ARDtriell %>%
+#   filter(candidate_comb %in% c("Baerbock"))
+#   
+# ARD_b %>%
+#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+#     geom_line()
+# 
+# ARD_l <- ARDtriell %>%
+#   filter(candidate_comb %in% c("Laschet"))
+#   
+# ARD_l %>%
+#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+#     geom_line()
+# 
+# ARD_s <- ARDtriell %>%
+#   filter(candidate_comb %in% c("Scholz"))
+#   
+# ARD_s %>%
+#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+#     geom_line()
+```
+
+
 ## Keyness
 
 We can run a keyness analysis to find differences in th e
@@ -484,36 +485,4 @@ ggplot(data = df_tablRet) +
   labs(title = "Number of retweets by candidate combination",
        x = "Candidate combination", 
        y = "Number of retweets")
-```
-
-
-# Open questions
-
-## Research
-
-## Methodology
-
-```{r}
-triell_large %>% 
-#  filter(!is.na(candidate_comb)) %>%
-  group_by(candidate_comb) %>% 
-  summarise(sent=mean(sentiment), n=n()) %>% 
-  arrange(desc(n)) %>% 
-  head(n=20) %>% 
-  arrange(desc(sent))%>%
-  knitr::kable(
-  caption = "Mean sentiment scores by combination of candidates' names (data 'large')\\label{tab:large_mean}",
-  )
-
-df_tablRet <- triell_all %>% 
-  group_by(candidate_comb, retweet_count) %>% 
-  summarise(sum=(retweet_count))
-
-df_tablRet
-rename(df_tablRet, sum(retweet_count) = retweet_count_candidates)
-
-ggplot(data = df_tablRet) +
-  geom_bar(mapping = aes(x = "sum(retweet_count)"),
-                 binwidth = 0.5)
-
 ```
