@@ -38,17 +38,25 @@ library(plotly)
 library(spacyr) # Für Lemmatisierung
 library(tidyr)
 library(stringr) # Working with strings
+library(plotly) # for interactive figures
+library(wordcloud2)
 ```
 
-# Introduction
+# Introduction & research question
 
-This is a group work of group #2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R". 
+This is a group work of group \#2 in the GESIS fall school "Introduction to Computational Social Sciences with Applications in R".
 
-The aim of this project is to analyse tweets surrounding the election of the Bundeskanzler:in in Germany, focusing on the three candidates Annalena Baerbock (Grüne), Olaf Scholz (SPD) and Armin Laschet (CDU).
+The aim of this project is to analyse tweets surrounding the election of the Bundeskanzler:in in Germany, focusing on the three candidates Annalena Baerbock (Grüne), Olaf Scholz (SPD) and Armin Laschet (CDU). We tried to answer the following broad research question:
+
+> *How does the Twitter discussion About the three candidates in the context of the ARD triell Looks like?*
 
 # Getting twitter data
 
-First, we loaded data from Twitter using the `rtweet` package^[https://cran.r-project.org/web/packages/rtweet/rtweet.pdf]. (Another possibility would be to use the `academictwitteR`^[https://github.com/cjbarrie/academictwitteR, https://cran.r-project.org/web/packages/academictwitteR/index.html], but we could not get it to work in the first tries, so stuck to `rtweet`. 
+First, we loaded data from Twitter using the `rtweet` package[^1]. (Another possibility would be to use the `academictwitteR`[^2], but we could not get it to work in the first tries, so stuck to `rtweet`.
+
+[^1]: <https://cran.r-project.org/web/packages/rtweet/rtweet.pdf>
+
+[^2]: <https://github.com/cjbarrie/academictwitteR>, <https://cran.r-project.org/web/packages/academictwitteR/index.html>
 
 ```{r twitter_token, include = FALSE}
 # source("twitter_token.R", local = knitr::knit_global())
@@ -57,8 +65,8 @@ First, we loaded data from Twitter using the `rtweet` package^[https://cran.r-pr
 
 As two persons from our group already had access to the Twitter API, we collected data twice:
 
-1. Using simply the query "Triell" (no hashtag), collecting as many tweets as possible
-2. Using separate queries for the candidates and using a hashtab with "Triell"; e.g. "`#triell AND baerbock`"
+1.  Using simply the query "Triell" (no hashtag), collecting as many tweets as possible
+2.  Using separate queries for the candidates and using a hashtag with "Triell"; e.g. "`#triell AND baerbock`"
 
 Both queries were limited to exclude retweets and only search for German language `include_rts = FALSE, lang = "de"`.
 
@@ -101,7 +109,7 @@ triell_s <- dplyr::mutate(triell_s, candidate = "Scholz")
 triell_all <- rbind(triell_b, triell_l, triell_s)
 ```
 
-This gave us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries. _We subsequently usually ran our following analyses for both of these datasets as we found it interesting to compare the results based on the slightly different search queries and results (hashtag vs. no hashtab, searching for candidates' names specifically vs. only for "Triell")._
+This gave us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries. *We subsequently usually ran our following analyses for both of these datasets as we found it interesting to compare the results based on the slightly different search queries and results (hashtag vs. no hashtag, searching for candidates' names specifically vs. only for "Triell").*
 
 ```{r structures, include = FALSE}
 str(triell_all)
@@ -111,9 +119,6 @@ str(triell_large)
 
 # Data cleaning and preparation
 
-<!-- ## Removing punctuation etc. from tweet text -->
-
-<!--
 ```{r cleaning}
 triell_all$text <-  gsub("https\\S*", "", triell_all$text)
 triell_all$text <-  gsub("@\\S*", "", triell_all$text) 
@@ -127,7 +132,6 @@ triell_large$text <-  gsub("amp", "", triell_large$text)
 triell_large$text <-  gsub("[\r\n]", "", triell_large$text)
 # triell_large$text <-  gsub("[[:punct:]]", "", triell_large$text) # remove punctuation
 ```
--->
 
 ## Add candidate identifiers
 
@@ -169,9 +173,7 @@ levels = c(1, 10, 100, 11, 101, 110, 111),
 labels = c("Baerbock", "Laschet", "Scholz", "Baerbock + Laschet", "Baerbock + Scholz", "Laschet + Scholz", "Baerbock + Scholz + Laschet"))
 ```
 
-## Adding dates
-
-<!-- ADD CODE FOR SEPARATING TWEETS BEFORE, DURING AND AFTER SECOND TRIELL FROM JULIA HERE! -->
+## Adding dates and times
 
 First we check the first and last dates of our twitter datasets and we see - not surprising - that both dataframes have their newest entries from September 15th (day of download) and oldest entries from September 7th (as you can only access tweets from a certain number of days back via the twitter API).
 
@@ -189,6 +191,72 @@ Next, we isolated the single days of the `created_at` for later usage.
 triell_all$day <- substr(triell_all$created_at, 1, 10)
 
 triell_large$day <- substr(triell_large$created_at, 1, 10)
+```
+
+We can also identify tweets which were only sent *during* the second Triell.
+
+```{r}
+### use only tweets during the Triell at RTL 
+
+triell_large$month <- substr(triell_large$created_at, 1, 7)
+
+triell_large$day <- substr(triell_large$created_at, 1, 10)
+
+triell_large$time <- substr(triell_large$created_at, 12, 16)
+                     
+triellARD <- subset(triell_large, triell_large$day == "2021-09-12")
+
+triellARDlive <- subset(triellARD, triellARD$time > "20:14")
+
+ARDtriell <- subset(triellARDlive, triellARDlive$time < "21:55")
+```
+
+The sentiments during the Triell can then be plotted over time.
+
+```{r}
+method <- "nrc"
+lang <- "german"
+ARDtriell$sentiment <- get_sentiment(ARDtriell$text, method=method, language=lang)
+ARDtriell$sentiment[1:10]
+
+ggplot(data = ARDtriell, aes(x= time, y= sentiment)) + geom_point() +
+  stat_summary(aes(y = sentiment,group=1), fun.y=mean, colour="red", geom="line",group=1)
+
+ARD <- ARDtriell %>%
+  filter(candidate_comb %in% c("Baerbock", "Laschet", "Scholz"))
+  
+ARD %>%
+ ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+  geom_line() + theme(legend.position="bottom") + 
+  labs(title = "Sentiments in Twitter Debate During ARD Triell", 
+       color='Candidates', 
+       x = "Time", 
+       y = "Sentiment") + 
+  scale_color_manual(values = c("green", "black", "red")) + 
+  theme(axis.text.x = element_text(size = 3, 
+                                   angle = 90), 
+        text = element_text(size=10))
+
+# ARD_b <- ARDtriell %>%
+#   filter(candidate_comb %in% c("Baerbock"))
+#   
+# ARD_b %>%
+#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+#     geom_line()
+# 
+# ARD_l <- ARDtriell %>%
+#   filter(candidate_comb %in% c("Laschet"))
+#   
+# ARD_l %>%
+#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+#     geom_line()
+# 
+# ARD_s <- ARDtriell %>%
+#   filter(candidate_comb %in% c("Scholz"))
+#   
+# ARD_s %>%
+#  ggplot(aes(x= time, y= sentiment,  group=candidate_comb ,color=candidate_comb)) +
+#     geom_line()
 ```
 
 ## Generate corpus & wordlists
@@ -234,17 +302,17 @@ triell_large_corpus <- corpus(triell_large$text) %>%
 # str(triell_large_corpus)
 ```
 
-# Data analysis
+# Analysis
 
 The aim of the data analysis was to find differences in the tweets, depending on who (which candidate, or which comibination of candidates is mentioned in the tweets) and on the time of sending the tweet.
 
-## Sentiment analysis (using Syuzhet in German)
+## Sentiment analysis (using syuzhet in German)
 
 ### Differences by candidates' mentions
 
-For this we get the sentiments of all the tweets, using the `Syuzhet` package, which can also be used with German (setting `lang <- "german"` and using `method = "nrc"` instead of `affin`, as `affin` is not availiable in German).
+For this we get the sentiments of all the tweets, using the `Syuzhet` package, which can also be used with German (setting `lang <- "german"` and using `method = "nrc"` instead of `affin`, as `affin` is not available in German).
 
-In the following code chunk we execute the sentiment analysis for the the two datasets ("large" and "all").
+In the following code chunk we execute the sentiment analysis for the two datasets ("large" and "all").
 
 ```{r create_sentiments}
 triell_all$sentiment <- get_sentiment(triell_all$text, method="nrc", language="german")
@@ -254,7 +322,7 @@ triell_large$sentiment <- get_sentiment(triell_large$text, method="nrc", languag
 triell_large$sentiment[1:10]
 ```
 
-The mean of the sentiment values can then be calculated for each of the three candidates. To check the distribution of the sentiments by candidate we can graph the distribution as histograms. The sentiment scores range from `r min(triell_large$sentiment)` to `r max(triell_large$sentiment)` for "large" dataset and `r min(triell_all$sentiment)` to `r max(triell_all$sentiment)` for the "all" dataset.
+The mean of the sentiment values can then be calculated for each of the three candidates. To check the distribution of the sentiments by candidate we can graph the distribution as histograms. The sentiment scores range from `r min(triell_large$sentiment)` to `r max(triell_large$sentiment)` for the "large" dataset and `r min(triell_all$sentiment)` to `r max(triell_all$sentiment)` for the "all" dataset.
 
 We can also visualise the distributions as histograms, as seen in the following figures.
 
@@ -302,7 +370,7 @@ triell_all %>%
   arrange(desc(sent))
 ```
 
-However, when not only distinguishing by dataset (twitter query), but by appearance of the candidates' names, we _do_ find some interesting differences. Depending on which candidates are named (alone or together) in the tweets, we get different means for the sentiment scores. Table \ref{tab:all_mean} shows the mean values for the candidates combination of names for the data "all", while table \ref{tab:all_mean} shows the same information for data "large", but with included `NA`, which in this case signifies tweets which have the query "Triell" in the text, but none of the candidate's names.
+However, when not only distinguishing by dataset (twitter query), but by appearance of the candidates' names, we *do* find some interesting differences. Depending on which candidates are named (alone or together) in the tweets, we get different means for the sentiment scores. Table \ref{tab:all_mean} shows the mean values for the candidates combination of names for the data "all", while table \ref{tab:all_mean} shows the same information for data "large", but with included `NA`, which in this case signifies tweets which have the query "Triell" in the text, but none of the candidates' names.
 
 ```{r sentiment_candidate_combined}
 triell_all %>% 
@@ -332,7 +400,7 @@ triell_large %>%
 
 ## Keyness
 
-We can run a keyness analysis to find differences in th e 
+We can run a keyness analysis to find differences in th e
 
 ### Differences by candidates' mentions
 
@@ -343,7 +411,6 @@ triell_corpus <- corpus(triell_all)
 
 triell_dfm  <-  tokens(triell_corpus) %>% dfm() %>% dfm_group(triell_all$candidate)
 ```
-
 
 ```{r keyness_exe}
 head(textstat_keyness(triell_dfm, target="Baerbock",
@@ -356,20 +423,69 @@ head(textstat_keyness(triell_dfm, target="Laschet",
                       measure="chi2",sort=T), n=20)
 ```
 
+Die häufigsten Wörter der drei Kandidat:innen lassen sich zudem auch als wordcloud darstellen. Nachfolgend die wordcloud von Annalena Baerbock.
 
-### Differences by time of tweet
+```{r keyness_wordcloud_baerbock}
+set.seed(1234)
+#Package wordcloud
+keyness_b <- head(textstat_keyness(triell_dfm, target="Baerbock", measure="chi2",sort=T), n=20)
+keyness_b <- keyness_b[-c(1, 2),]#removing "#baerbock" and "baerbock"
 
-## Reaction to tweets: Retweets and likes
+#Package wordcloud2
+keyness_b_short <- subset(keyness_b, select=c(feature, chi2))
+wordcloud2(keyness_b_short, color = "random-dark")
+```
+
+Nachfolgend die wordcloud von Annalena Baerbock.
+
+```{r keyness_wordcloud_scholz}
+set.seed(1234)
+#Wordclouds on keyness analysis Scholz
+#Package wordcloud
+keyness_s <- head(textstat_keyness(triell_dfm, target="Scholz", measure="chi2",sort=T), n=20)
+keyness_s <- keyness_s[-c(1, 2),]#removing "#scholz" and "scholz"
+
+#Package wordcloud2
+keyness_s_short <- subset(keyness_s, select=c(feature, chi2))
+wordcloud2(keyness_s_short, color = "random-dark")
+```
+
+Nachfolgend die wordcloud von Armin Laschet.
+
+```{r keyness_wordcloud_laschet}
+set.seed(1234)
+#Wordclouds on keyness analysis Laschet
+#Package wordcloud
+keyness_l <- head(textstat_keyness(triell_dfm, target="Laschet", measure="chi2",sort=T), n=20)
+keyness_l <- keyness_l[-c(1, 2),]#removing "#laschet" and "laschet"
+
+#Package wordcloud2
+keyness_l_short <- subset(keyness_l, select=c(feature, chi2))
+wordcloud2(keyness_l_short, color = "random-dark")
+```
+
+
+## Reaction to tweets: Retweets
 
 ### Differences by candidates' mentions
 
-### Differences by time of tweet
+In the following figure we see the number of retweets per tweet by combination of candidates' names.
 
-## Who tweets what? Analysing sender of tweets
+```{r retweets}
+df_tablRet <- triell_all %>% 
+  group_by(candidate_comb) %>% 
+  summarise(sum = sum(retweet_count)) %>% 
+  filter(!is.na(candidate_comb))
 
-### Differences by candidates' mentions
+ggplot(data = df_tablRet) +
+  geom_bar(mapping = aes(x = candidate_comb, y = sum),
+           stat = "identity") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+ 
+  labs(title = "Number of retweets by candidate combination",
+       x = "Candidate combination", 
+       y = "Number of retweets")
+```
 
-### Differences by time of tweet
 
 # Open questions
 
@@ -377,3 +493,27 @@ head(textstat_keyness(triell_dfm, target="Laschet",
 
 ## Methodology
 
+```{r}
+triell_large %>% 
+#  filter(!is.na(candidate_comb)) %>%
+  group_by(candidate_comb) %>% 
+  summarise(sent=mean(sentiment), n=n()) %>% 
+  arrange(desc(n)) %>% 
+  head(n=20) %>% 
+  arrange(desc(sent))%>%
+  knitr::kable(
+  caption = "Mean sentiment scores by combination of candidates' names (data 'large')\\label{tab:large_mean}",
+  )
+
+df_tablRet <- triell_all %>% 
+  group_by(candidate_comb, retweet_count) %>% 
+  summarise(sum=(retweet_count))
+
+df_tablRet
+rename(df_tablRet, sum(retweet_count) = retweet_count_candidates)
+
+ggplot(data = df_tablRet) +
+  geom_bar(mapping = aes(x = "sum(retweet_count)"),
+                 binwidth = 0.5)
+
+```
