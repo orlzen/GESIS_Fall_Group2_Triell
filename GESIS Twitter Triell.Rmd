@@ -16,7 +16,7 @@ editor_options:
 # Global setup for all R chunks in this file
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(message = FALSE)
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(include = TRUE) # for now all R chunks are included, can be taken out here later
 ```
 
@@ -98,7 +98,7 @@ triell_all <- rbind(triell_b, triell_l, triell_s)
 
 This gives us two dataframes; one with the combined searched tweets of the candidates; called `triell_all` of `r count(triell_all)` entries and one large dataframe called `triell_large` of `r count(triell_large)` entries.
 
-```{r structures, echo = FALSE}
+```{r structures}
 str(triell_all)
 str(triell_large)
 ```

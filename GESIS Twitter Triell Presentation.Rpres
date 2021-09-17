@@ -1,0 +1,71 @@
+GESIS Twitter Triell Presentation
+========================================================
+author: Melanie Dietz, Julia Lück-Benz, Carina Weinmann, Lorenz Biberstein
+date: `r format(Sys.Date(), '%d %b %Y')`
+autosize: true
+
+
+```{r libraries, echo = FALSE}
+library(rtweet)
+library(ggplot2)
+library(knitr) # for generating tables in markdown
+library(janitor) # for creating tables
+library(tm) # Für text mining
+library(tidytext) # for text mining
+library(data.table)
+library(quanteda) # Quantitative Analysis of Textual Data 
+library(quanteda.textstats)
+library(syuzhet)
+library(dplyr) # For topic modeling
+library(topicmodels)
+library(udpipe) # for german lemmatization
+library(plotly)
+library(spacyr) # Für Lemmatisierung
+library(tidyr)
+library(stringr) # Working with strings
+```
+
+```{r import_csv, echo = FALSE}
+triell_large <- read.csv("data/triell_2021-09-16_large.csv")
+
+triell_b <- read.csv("data/triell_b_2021-09-15.csv")
+triell_l <- read.csv("data/triell_l_2021-09-15.csv")
+triell_s <- read.csv("data/triell_s_2021-09-15.csv")
+```
+
+Introduction
+========================================================
+
+Simple table of contents
+
+- Slide 1: Basic research question
+- Slide 2: Data used
+- Slide 3: Results
+
+Basic research question
+========================================================
+
+```{r}
+summary(cars)
+```
+
+Data used
+========================================================
+
+- Twitter API
+- Query "Triell"
+- As many tweets as possible (back to September 7th)
+- Gets `r count(triell_large)` tweets
+
+
+Data Results
+========================================================
+
+```{r, echo=FALSE}
+triell_large %>%
+ ggplot() +
+  aes(x = sentiment) +
+  geom_histogram(bins = 30L) +
+  theme_minimal() +
+  ggtitle("Sentiments of all tweets together (large dataset)")
+```
